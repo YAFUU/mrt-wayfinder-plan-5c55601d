@@ -213,3 +213,7 @@ html[data-reduce-motion="true"] *::after {
   background: var(--color-card);
   color: var(--color-card-foreground);
 }
+.mrt-map-grayscale {
+  filter: grayscale(1) contrast(1.05) brightness(1.02);
+}
+

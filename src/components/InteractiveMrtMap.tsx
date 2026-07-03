@@ -45,7 +45,9 @@ export function InteractiveMrtMap({ routeStations = [] as string[] }: { routeSta
         <TileLayer
           attribution="© OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          className="mrt-map-grayscale"
         />
+
 
         {/* Operational lines */}
         {LINES.filter((l) => l.status === "operational").map((line) => visible[line.id] && (
