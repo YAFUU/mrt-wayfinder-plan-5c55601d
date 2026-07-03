@@ -59,7 +59,12 @@ export function InteractiveMrtMap({ routeStations = [] as string[] }: { routeSta
         {/* Selected route polyline (thicker) */}
         {routeStations.length > 1 && (
           <Polyline
-            positions={routeStations.map(getStation).filter(Boolean).map((s) => [s!.lat, s!.lng] as [number, number])}
+            positions={
+              routeStations
+                .map((id) => getStation(id))
+                .filter((s): s is NonNullable<typeof s> => Boolean(s))
+                .map((s) => [s.lat, s.lng] as [number, number])
+            }
             pathOptions={{ color: "#0B2344", weight: 7, opacity: 0.9 }}
           />
         )}
