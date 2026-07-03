@@ -73,7 +73,7 @@ export function InteractiveMrtMap({ routeStations = [] as string[] }: { routeSta
         {(["orange", "brown"] as const).map((id) => visible[id] && (
           <Polyline
             key={id}
-            positions={FUTURE_NETWORK[id].stations.map((s) => [s.lat, s.lng])}
+            positions={FUTURE_NETWORK[id].stations.map((s) => [s.lat, s.lng] as [number, number])}
             pathOptions={{ color: FUTURE_NETWORK[id].color, weight: 3, dashArray: "6 6", opacity: 0.8 }}
           />
         ))}
