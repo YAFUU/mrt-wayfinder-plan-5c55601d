@@ -141,7 +141,7 @@ function Home() {
             {savedTrips.slice(0, 3).map((tr) => {
               const o = getStation(tr.originStationId); const d = getStation(tr.destinationStationId);
               return (
-                <Link key={tr.id} to="/route" search={{ from: tr.originStationId, to: tr.destinationStationId }}>
+                <Link key={tr.id} to="/plan" search={{ from: tr.originStationId, to: tr.destinationStationId }}>
                   <Card className="p-3 hover:bg-accent transition">
                     <p className="text-sm font-medium">{tr.icon} {tr.nickname}</p>
                     <p className="text-xs text-muted-foreground">{o?.nameTh} → {d?.nameTh}</p>

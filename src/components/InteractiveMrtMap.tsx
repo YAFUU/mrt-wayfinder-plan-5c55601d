@@ -136,7 +136,7 @@ export function InteractiveMrtMap({ routeStations = [] as string[] }: { routeSta
           </div>
           <div className="mt-3 flex gap-2">
             <Button size="sm" variant="outline" className="flex-1" onClick={() => { trip.setOrigin(selected.id); setSelected(null); }}>{t("map.setOrigin")}</Button>
-            <Button size="sm" className="flex-1" onClick={() => { trip.setDestination(selected.id); setSelected(null); nav({ to: "/route" }); }}>{t("map.setDestination")}</Button>
+            <Button size="sm" className="flex-1" onClick={() => { trip.setDestination(selected.id); setSelected(null); nav({ to: "/plan" }); }}>{t("map.setDestination")}</Button>
           </div>
         </Card>
       )}

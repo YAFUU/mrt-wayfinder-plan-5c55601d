@@ -97,10 +97,10 @@ function Search() {
                         <p className="text-xs text-muted-foreground truncate">{s.nameEn} · {s.code}</p>
                       </div>
                       <div className="flex gap-1 shrink-0">
-                        <Button size="sm" variant="outline" onClick={() => { setOrigin(s.id); commitSearch(q); nav({ to: "/route" }); }}>
+                        <Button size="sm" variant="outline" onClick={() => { setOrigin(s.id); commitSearch(q); nav({ to: "/plan" }); }}>
                           {t("search.setOrigin")}
                         </Button>
-                        <Button size="sm" onClick={() => { setDestination(s.id); commitSearch(q); nav({ to: "/route" }); }}>
+                        <Button size="sm" onClick={() => { setDestination(s.id); commitSearch(q); nav({ to: "/plan" }); }}>
                           {t("search.setDestination")}
                         </Button>
                       </div>
@@ -124,7 +124,7 @@ function Search() {
                           {p.nameEn} · ใกล้ {p.nearestStationId} · เดิน {p.walkingMeters}ม.
                         </p>
                       </div>
-                      <Button size="sm" onClick={() => { setDestination(p.nearestStationId); commitSearch(q); nav({ to: "/route" }); }}>
+                      <Button size="sm" onClick={() => { setDestination(p.nearestStationId); commitSearch(q); nav({ to: "/plan" }); }}>
                         {t("search.setDestination")}
                       </Button>
                     </div>

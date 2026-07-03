@@ -38,7 +38,7 @@ function Trips() {
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <Button size="sm" asChild>
-                  <Link to="/route" search={{ from: tr.originStationId, to: tr.destinationStationId }}>
+                  <Link to="/plan" search={{ from: tr.originStationId, to: tr.destinationStationId }}>
                     <Play className="size-3.5 mr-1" /> {t("trips.repeat")}
                   </Link>
                 </Button>
