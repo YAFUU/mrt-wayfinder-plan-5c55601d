@@ -13,7 +13,7 @@ import { storage } from "@/services/storageService";
 import { toast } from "sonner";
 
 const search = z.object({ from: z.string().optional(), to: z.string().optional() });
-export const Route = createFileRoute("/route")({ validateSearch: search, component: RoutePage });
+export const Route = createFileRoute("")({ validateSearch: search, component: RoutePage });
 
 function RoutePage() {
   const { t } = useTranslation();
