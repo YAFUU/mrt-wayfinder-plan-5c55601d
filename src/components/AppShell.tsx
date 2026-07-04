@@ -40,7 +40,7 @@ function DemoBanner() {
   const { t } = useTranslation();
   return (
     <div className="bg-warning/15 text-foreground text-[11px] px-3 py-1.5 border-b border-warning/30 text-center">
-      🧪 {t("demo.banner")}
+      {t("demo.banner")}
     </div>
   );
 }
@@ -64,10 +64,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               const active = n.to === "/" ? pathname === "/" : pathname.startsWith(n.to);
               return (
                 <Link key={n.to} to={n.to} className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                  active ? "bg-primary text-primary-foreground" : "hover:bg-sidebar-accent"
+                  "group relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ease-out",
+                  active ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-sidebar-accent hover:translate-x-0.5"
                 )}>
-                  <n.icon className="size-4" /> {t(n.key)}
+                  <n.icon className={cn("size-4 transition-transform duration-300", active ? "scale-110" : "group-hover:scale-110")} /> {t(n.key)}
                 </Link>
               );
             })}
@@ -76,10 +76,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 const active = pathname.startsWith(n.to);
                 return (
                   <Link key={n.to} to={n.to} className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-                    active ? "bg-primary text-primary-foreground" : "hover:bg-sidebar-accent"
+                    "group flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-300 ease-out",
+                    active ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-sidebar-accent hover:translate-x-0.5"
                   )}>
-                    <n.icon className="size-4" /> {t(n.key)}
+                    <n.icon className={cn("size-4 transition-transform duration-300", active ? "scale-110" : "group-hover:scale-110")} /> {t(n.key)}
                   </Link>
                 );
               })}
@@ -105,25 +105,25 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Button>
           </header>
 
-          <main className="flex-1 min-w-0 overflow-x-hidden pb-20 lg:pb-0">
+          <main key={pathname} className="flex-1 min-w-0 overflow-x-hidden pb-20 lg:pb-0 animate-fade-in">
             {children}
           </main>
 
           {/* Mobile bottom nav */}
-          <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card border-t grid grid-cols-5">
+          <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t grid grid-cols-5">
             {MOBILE_NAV.map((n) => {
               const active = n.to === "/" ? pathname === "/" : pathname.startsWith(n.to);
               const isTicket = n.to === "/tickets" && readyTicket;
               return (
                 <Link key={n.to} to={n.to} className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] min-h-14",
+                  "flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] min-h-14 transition-colors duration-300 ease-out",
                   active ? "text-primary" : "text-muted-foreground",
                   isTicket && "text-primary"
                 )}>
                   <div className={cn(
-                    "grid place-items-center size-8 rounded-full",
+                    "grid place-items-center size-8 rounded-full transition-all duration-300 ease-out",
                     isTicket && !active && "bg-primary text-primary-foreground",
-                    active && "bg-primary/10"
+                    active ? "bg-primary/10 scale-110" : "scale-100"
                   )}>
                     <n.icon className="size-4" />
                   </div>

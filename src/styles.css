@@ -7,7 +7,7 @@
 /* MRT QuickPass Design System */
 
 @theme inline {
-  --font-sans: "IBM Plex Sans Thai", "Noto Sans Thai", ui-sans-serif, system-ui,
+  --font-sans: "Inter", "Noto Sans Thai", ui-sans-serif, system-ui,
     -apple-system, "Segoe UI", sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
