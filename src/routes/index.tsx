@@ -60,7 +60,7 @@ function Home() {
       <div>
         <p className="text-xs text-muted-foreground">{today}</p>
         <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">
-          {t("home.greeting")}, {profile.displayName} 👋
+          {t("home.greeting")}, {profile.displayName}
         </h1>
         <p className="text-muted-foreground mt-1">{t("home.prompt")}</p>
       </div>

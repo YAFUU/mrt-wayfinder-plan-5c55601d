@@ -163,7 +163,7 @@ function RoutePage() {
                 <div className="min-w-0">
                   <p className="font-medium">{e.nameTh}</p>
                   <p className="text-xs text-muted-foreground">
-                    {e.hasElevator && "🛗 " + t("exit.elevator")} {e.hasRamp && "♿ " + t("exit.ramp")}
+                    {[e.hasElevator && t("exit.elevator"), e.hasRamp && t("exit.ramp")].filter(Boolean).join(" · ")}
                   </p>
                 </div>
               </div>
