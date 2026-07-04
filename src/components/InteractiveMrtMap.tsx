@@ -1,5 +1,4 @@
-import { MapContainer, TileLayer, Polyline, CircleMarker, Tooltip, useMap } from "react-leaflet";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LINES, STATIONS, FUTURE_NETWORK } from "@/data/network";
 import type { LineId, MrtStation } from "@/types/mrt";
@@ -10,26 +9,67 @@ import { Card } from "@/components/ui/card";
 import { X } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 
-const BKK_CENTER: [number, number] = [13.78, 100.55];
+const BKK_CENTER = { lat: 13.78, lng: 100.55 };
+const BROWSER_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
+const TRACKING_ID = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as string | undefined;
 
-function linePolyline(lineId: LineId): [number, number][] {
-  return STATIONS.filter((s) => s.lineId === lineId).sort((a, b) => a.order - b.order).map((s) => [s.lat, s.lng]);
+// Grayscale style so MRT lines pop
+const GRAYSCALE_STYLE: google.maps.MapTypeStyle[] = [
+  { elementType: "geometry", stylers: [{ saturation: -100 }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#555555" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
+  { featureType: "poi", stylers: [{ visibility: "off" }] },
+  { featureType: "transit", stylers: [{ visibility: "off" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#e5e5e5" }] },
+  { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#dedede" }] },
+  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#cfcfcf" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#d6d6d6" }] },
+  { featureType: "landscape", stylers: [{ color: "#f2f2f2" }] },
+  { featureType: "administrative", elementType: "labels.text.fill", stylers: [{ color: "#666666" }] },
+];
+
+let loaderPromise: Promise<typeof google> | null = null;
+
+function loadGoogleMaps(): Promise<typeof google> {
+  if (typeof window === "undefined") return Promise.reject(new Error("no window"));
+  if ((window as any).google?.maps) return Promise.resolve((window as any).google);
+  if (loaderPromise) return loaderPromise;
+  if (!BROWSER_KEY) return Promise.reject(new Error("Missing Google Maps key"));
+
+  loaderPromise = new Promise((resolve, reject) => {
+    const cbName = "__initMrtGmap";
+    (window as any)[cbName] = () => resolve((window as any).google);
+    const s = document.createElement("script");
+    const params = new URLSearchParams({
+      key: BROWSER_KEY,
+      loading: "async",
+      callback: cbName,
+      libraries: "geometry",
+    });
+    if (TRACKING_ID) params.set("channel", TRACKING_ID);
+    s.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
+    s.async = true;
+    s.defer = true;
+    s.onerror = () => reject(new Error("Failed to load Google Maps"));
+    document.head.appendChild(s);
+  });
+  return loaderPromise;
 }
 
-function FitToStations({ ids }: { ids: string[] }) {
-  const map = useMap();
-  useEffect(() => {
-    if (!ids.length) return;
-    const pts = ids.map(getStation).filter(Boolean).map((s) => [s!.lat, s!.lng] as [number, number]);
-    if (pts.length) map.fitBounds(pts, { padding: [40, 40] });
-  }, [ids, map]);
-  return null;
+function stationsFor(lineId: LineId): MrtStation[] {
+  return STATIONS.filter((s) => s.lineId === lineId).sort((a, b) => a.order - b.order);
 }
 
 export function InteractiveMrtMap({ routeStations = [] as string[] }: { routeStations?: string[] }) {
   const { t } = useTranslation();
   const nav = useNavigate();
   const trip = useTripStore();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const overlaysRef = useRef<Array<google.maps.Polyline | google.maps.Marker>>([]);
+  const routeOverlayRef = useRef<google.maps.Polyline | null>(null);
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [visible, setVisible] = useState<Record<LineId, boolean>>({
     blue: true, purple: true, yellow: true, pink: true, orange: false, brown: false,
   });
@@ -37,73 +77,136 @@ export function InteractiveMrtMap({ routeStations = [] as string[] }: { routeSta
 
   const toggle = (id: LineId) => setVisible((v) => ({ ...v, [id]: !v[id] }));
 
+  // Initialize map once
+  useEffect(() => {
+    let cancelled = false;
+    loadGoogleMaps()
+      .then((g) => {
+        if (cancelled || !containerRef.current) return;
+        mapRef.current = new g.maps.Map(containerRef.current, {
+          center: BKK_CENTER,
+          zoom: 11,
+          styles: GRAYSCALE_STYLE,
+          disableDefaultUI: false,
+          streetViewControl: false,
+          mapTypeControl: false,
+          fullscreenControl: false,
+        });
+        setReady(true);
+      })
+      .catch((e) => setError(e.message || "Map load failed"));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const routeSet = useMemo(() => new Set(routeStations), [routeStations]);
+
+  // Redraw overlays when data or filters change
+  useEffect(() => {
+    const g = (window as any).google as typeof google | undefined;
+    const map = mapRef.current;
+    if (!ready || !g || !map) return;
+
+    // Clear
+    overlaysRef.current.forEach((o) => o.setMap(null));
+    overlaysRef.current = [];
+
+    // Operational lines
+    LINES.filter((l) => l.status === "operational").forEach((line) => {
+      if (!visible[line.id]) return;
+      const path = stationsFor(line.id).map((s) => ({ lat: s.lat, lng: s.lng }));
+      const poly = new g.maps.Polyline({
+        path,
+        strokeColor: line.color,
+        strokeOpacity: 0.9,
+        strokeWeight: routeSet.size ? 3 : 5,
+        map,
+      });
+      overlaysRef.current.push(poly);
+    });
+
+    // Future network dashed
+    (["orange", "brown"] as const).forEach((id) => {
+      if (!visible[id]) return;
+      const cfg = FUTURE_NETWORK[id];
+      const poly = new g.maps.Polyline({
+        path: cfg.stations.map((s) => ({ lat: s.lat, lng: s.lng })),
+        strokeOpacity: 0,
+        icons: [
+          {
+            icon: { path: "M 0,-1 0,1", strokeOpacity: 0.9, strokeColor: cfg.color, scale: 3 },
+            offset: "0",
+            repeat: "12px",
+          },
+        ],
+        map,
+      });
+      overlaysRef.current.push(poly);
+    });
+
+    // Stations
+    STATIONS.filter((s) => visible[s.lineId]).forEach((s) => {
+      const line = LINES.find((l) => l.id === s.lineId)!;
+      const inRoute = routeSet.has(s.id);
+      const marker = new g.maps.Marker({
+        position: { lat: s.lat, lng: s.lng },
+        map,
+        title: `${s.nameTh} (${s.code})`,
+        icon: {
+          path: g.maps.SymbolPath.CIRCLE,
+          scale: s.isInterchange ? 7 : inRoute ? 6 : 4,
+          fillColor: inRoute ? "#0B2344" : "#ffffff",
+          fillOpacity: 1,
+          strokeColor: inRoute ? "#0B2344" : line.color,
+          strokeWeight: 2,
+        },
+      });
+      marker.addListener("click", () => setSelected(s));
+      overlaysRef.current.push(marker);
+    });
+  }, [ready, visible, routeSet]);
+
+  // Selected route polyline + fit bounds
+  useEffect(() => {
+    const g = (window as any).google as typeof google | undefined;
+    const map = mapRef.current;
+    if (!ready || !g || !map) return;
+
+    if (routeOverlayRef.current) {
+      routeOverlayRef.current.setMap(null);
+      routeOverlayRef.current = null;
+    }
+    if (routeStations.length < 2) return;
+
+    const pts = routeStations
+      .map((id) => getStation(id))
+      .filter((s): s is NonNullable<typeof s> => Boolean(s))
+      .map((s) => ({ lat: s.lat, lng: s.lng }));
+
+    routeOverlayRef.current = new g.maps.Polyline({
+      path: pts,
+      strokeColor: "#0B2344",
+      strokeOpacity: 0.9,
+      strokeWeight: 7,
+      map,
+      zIndex: 999,
+    });
+
+    const bounds = new g.maps.LatLngBounds();
+    pts.forEach((p) => bounds.extend(p));
+    map.fitBounds(bounds, 60);
+  }, [ready, routeStations]);
 
   return (
     <div className="relative h-[calc(100dvh-8.5rem)] lg:h-[calc(100dvh-6rem)] w-full">
-      <MapContainer center={BKK_CENTER} zoom={11} scrollWheelZoom className="h-full w-full">
-        <TileLayer
-          attribution="© OpenStreetMap contributors"
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          className="mrt-map-grayscale"
-        />
+      <div ref={containerRef} className="h-full w-full bg-muted" />
 
-
-        {/* Operational lines */}
-        {LINES.filter((l) => l.status === "operational").map((line) => visible[line.id] && (
-          <Polyline
-            key={line.id}
-            positions={linePolyline(line.id)}
-            pathOptions={{ color: line.color, weight: routeSet.size ? 3 : 5, opacity: 0.9 }}
-          />
-        ))}
-
-        {/* Selected route polyline (thicker) */}
-        {routeStations.length > 1 && (
-          <Polyline
-            positions={
-              routeStations
-                .map((id) => getStation(id))
-                .filter((s): s is NonNullable<typeof s> => Boolean(s))
-                .map((s) => [s.lat, s.lng] as [number, number])
-            }
-            pathOptions={{ color: "#0B2344", weight: 7, opacity: 0.9 }}
-          />
-        )}
-
-        {/* Future network dashed */}
-        {(["orange", "brown"] as const).map((id) => visible[id] && (
-          <Polyline
-            key={id}
-            positions={FUTURE_NETWORK[id].stations.map((s) => [s.lat, s.lng] as [number, number])}
-            pathOptions={{ color: FUTURE_NETWORK[id].color, weight: 3, dashArray: "6 6", opacity: 0.8 }}
-          />
-        ))}
-
-        {/* Stations */}
-        {STATIONS.filter((s) => visible[s.lineId]).map((s) => {
-          const line = LINES.find((l) => l.id === s.lineId)!;
-          const inRoute = routeSet.has(s.id);
-          return (
-            <CircleMarker
-              key={s.id}
-              center={[s.lat, s.lng]}
-              radius={s.isInterchange ? 7 : inRoute ? 6 : 4}
-              pathOptions={{
-                color: inRoute ? "#0B2344" : line.color,
-                fillColor: inRoute ? "#0B2344" : "white",
-                fillOpacity: 1,
-                weight: 2,
-              }}
-              eventHandlers={{ click: () => setSelected(s) }}
-            >
-              <Tooltip>{s.nameTh} ({s.code})</Tooltip>
-            </CircleMarker>
-          );
-        })}
-
-        {routeStations.length > 0 && <FitToStations ids={routeStations} />}
-      </MapContainer>
+      {error && (
+        <div className="absolute inset-0 grid place-items-center bg-background/80 text-sm text-destructive p-4 text-center">
+          {error}
+        </div>
+      )}
 
       {/* Line toggles */}
       <Card className="absolute top-2 left-2 z-[400] p-2 max-w-[220px] shadow-lg">
@@ -119,11 +222,6 @@ export function InteractiveMrtMap({ routeStations = [] as string[] }: { routeSta
           ))}
         </div>
       </Card>
-
-      {/* Attribution notice */}
-      <div className="absolute bottom-1 left-2 z-[400] text-[10px] bg-white/80 px-1.5 rounded">
-        © OpenStreetMap contributors
-      </div>
 
       {/* Station detail */}
       {selected && (
