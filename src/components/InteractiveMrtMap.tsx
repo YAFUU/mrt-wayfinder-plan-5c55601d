@@ -92,7 +92,7 @@ export function InteractiveMrtMap({ routeStations = [] as string[] }: { routeSta
         mapRef.current = new g.maps.Map(containerRef.current, {
           center: BKK_CENTER,
           zoom: 11,
-          styles: GRAYSCALE_STYLE,
+          styles: SCHEMATIC_STYLE,
           disableDefaultUI: false,
           streetViewControl: false,
           mapTypeControl: false,
