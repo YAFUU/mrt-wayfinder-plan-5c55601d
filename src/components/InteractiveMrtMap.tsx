@@ -14,20 +14,25 @@ const BKK_CENTER = { lat: 13.78, lng: 100.55 };
 const BROWSER_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
 const TRACKING_ID = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as string | undefined;
 
-// Grayscale style so MRT lines pop
-const GRAYSCALE_STYLE: google.maps.MapTypeStyle[] = [
-  { elementType: "geometry", stylers: [{ saturation: -100 }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#555555" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
+// Clean schematic-style base map (white background, muted geography, colored MRT lines pop)
+const SCHEMATIC_STYLE: google.maps.MapTypeStyle[] = [
+  { elementType: "geometry", stylers: [{ color: "#f7f8fa" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#8a94a6" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }, { weight: 3 }] },
+  { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
   { featureType: "poi", stylers: [{ visibility: "off" }] },
   { featureType: "transit", stylers: [{ visibility: "off" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#e5e5e5" }] },
-  { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#dedede" }] },
-  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#cfcfcf" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#d6d6d6" }] },
-  { featureType: "landscape", stylers: [{ color: "#f2f2f2" }] },
-  { featureType: "administrative", elementType: "labels.text.fill", stylers: [{ color: "#666666" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#eef0f4" }] },
+  { featureType: "road", elementType: "labels", stylers: [{ visibility: "off" }] },
+  { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#e6e9ef" }] },
+  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#dde1e8" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#dfe8f0" }] },
+  { featureType: "landscape", stylers: [{ color: "#f7f8fa" }] },
+  { featureType: "administrative", elementType: "labels.text.fill", stylers: [{ color: "#6b7280" }] },
+  { featureType: "administrative.land_parcel", stylers: [{ visibility: "off" }] },
+  { featureType: "administrative.neighborhood", stylers: [{ visibility: "off" }] },
 ];
+
 
 let loaderPromise: Promise<typeof google> | null = null;
 
@@ -87,7 +92,7 @@ export function InteractiveMrtMap({ routeStations = [] as string[] }: { routeSta
         mapRef.current = new g.maps.Map(containerRef.current, {
           center: BKK_CENTER,
           zoom: 11,
-          styles: GRAYSCALE_STYLE,
+          styles: SCHEMATIC_STYLE,
           disableDefaultUI: false,
           streetViewControl: false,
           mapTypeControl: false,
@@ -113,19 +118,29 @@ export function InteractiveMrtMap({ routeStations = [] as string[] }: { routeSta
     overlaysRef.current.forEach((o) => o.setMap(null));
     overlaysRef.current = [];
 
-    // Operational lines
+    // Operational lines — draw a white casing under the colored stroke for a schematic look
     LINES.filter((l) => l.status === "operational").forEach((line) => {
       if (!visible[line.id]) return;
       const path = stationsFor(line.id).map((s) => ({ lat: s.lat, lng: s.lng }));
+      const casing = new g.maps.Polyline({
+        path,
+        strokeColor: "#ffffff",
+        strokeOpacity: 1,
+        strokeWeight: routeSet.size ? 7 : 9,
+        map,
+        zIndex: 1,
+      });
       const poly = new g.maps.Polyline({
         path,
         strokeColor: line.color,
-        strokeOpacity: 0.9,
-        strokeWeight: routeSet.size ? 3 : 5,
+        strokeOpacity: 1,
+        strokeWeight: routeSet.size ? 4 : 6,
         map,
+        zIndex: 2,
       });
-      overlaysRef.current.push(poly);
+      overlaysRef.current.push(casing, poly);
     });
+
 
     // Future network dashed
     (["orange", "brown"] as const).forEach((id) => {
