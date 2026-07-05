@@ -150,22 +150,32 @@ export function InteractiveMrtMap({ routeStations = [] as string[] }: { routeSta
     STATIONS.filter((s) => visible[s.lineId]).forEach((s) => {
       const line = LINES.find((l) => l.id === s.lineId)!;
       const inRoute = routeSet.has(s.id);
+      const fill = inRoute ? "#0B2344" : "#ffffff";
+      const stroke = inRoute ? "#0B2344" : line.color;
+      const textColor = inRoute ? "#ffffff" : "#0B2344";
+      const label = s.code;
+      const w = Math.max(34, 10 + label.length * 6);
+      const h = 20;
+      const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+  <rect x="1" y="1" rx="10" ry="10" width="${w - 2}" height="${h - 2}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+  <text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="10" font-weight="700" fill="${textColor}">${label}</text>
+</svg>`;
       const marker = new g.maps.Marker({
         position: { lat: s.lat, lng: s.lng },
         map,
         title: `${s.nameTh} (${s.code})`,
         icon: {
-          path: g.maps.SymbolPath.CIRCLE,
-          scale: s.isInterchange ? 7 : inRoute ? 6 : 4,
-          fillColor: inRoute ? "#0B2344" : "#ffffff",
-          fillOpacity: 1,
-          strokeColor: inRoute ? "#0B2344" : line.color,
-          strokeWeight: 2,
+          url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+          scaledSize: new g.maps.Size(w, h),
+          anchor: new g.maps.Point(w / 2, h / 2),
         },
+        zIndex: s.isInterchange ? 20 : inRoute ? 15 : 10,
       });
       marker.addListener("click", () => setSelected(s));
       overlaysRef.current.push(marker);
     });
+
   }, [ready, visible, routeSet]);
 
   // Selected route polyline + fit bounds
