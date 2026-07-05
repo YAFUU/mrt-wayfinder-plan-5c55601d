@@ -118,19 +118,29 @@ export function InteractiveMrtMap({ routeStations = [] as string[] }: { routeSta
     overlaysRef.current.forEach((o) => o.setMap(null));
     overlaysRef.current = [];
 
-    // Operational lines
+    // Operational lines — draw a white casing under the colored stroke for a schematic look
     LINES.filter((l) => l.status === "operational").forEach((line) => {
       if (!visible[line.id]) return;
       const path = stationsFor(line.id).map((s) => ({ lat: s.lat, lng: s.lng }));
+      const casing = new g.maps.Polyline({
+        path,
+        strokeColor: "#ffffff",
+        strokeOpacity: 1,
+        strokeWeight: routeSet.size ? 7 : 9,
+        map,
+        zIndex: 1,
+      });
       const poly = new g.maps.Polyline({
         path,
         strokeColor: line.color,
-        strokeOpacity: 0.9,
-        strokeWeight: routeSet.size ? 3 : 5,
+        strokeOpacity: 1,
+        strokeWeight: routeSet.size ? 4 : 6,
         map,
+        zIndex: 2,
       });
-      overlaysRef.current.push(poly);
+      overlaysRef.current.push(casing, poly);
     });
+
 
     // Future network dashed
     (["orange", "brown"] as const).forEach((id) => {
