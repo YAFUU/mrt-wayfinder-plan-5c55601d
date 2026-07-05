@@ -67,13 +67,15 @@ function Search() {
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("search.sectionSuggested")}</h3>
             <div className="grid gap-2 sm:grid-cols-2">
               {NEARBY_PLACES.slice(0, 6).map((p) => (
-                <button key={p.id} onClick={() => setQ(p.nameTh)} className="text-left">
-                  <Card className="p-3 hover:bg-accent transition">
-                    <p className="text-sm font-medium">{p.nameTh}</p>
+                <button key={p.id} onClick={() => setQ(p.nameTh)} className="text-left group">
+                  <Card className="relative overflow-hidden p-3 border border-border/70 bg-card transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-0.5 group-hover:shadow-lg group-hover:shadow-primary/10 group-hover:border-primary/40 group-hover:bg-accent/40">
+                    <span className="pointer-events-none absolute inset-y-0 left-0 w-0.5 bg-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    <p className="text-sm font-medium transition-colors duration-300 group-hover:text-primary">{p.nameTh}</p>
                     <p className="text-xs text-muted-foreground">{p.nameEn} · {p.category}</p>
                   </Card>
                 </button>
               ))}
+
             </div>
           </section>
         </>
