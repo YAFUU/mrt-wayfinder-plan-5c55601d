@@ -104,7 +104,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         {/* Mobile top bar */}
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="lg:hidden flex items-center justify-between px-4 h-14 border-b bg-card">
+          <header className="lg:hidden sticky top-0 z-40 flex items-center justify-between px-4 h-14 border-b bg-card/85 backdrop-blur-md shadow-sm transition-shadow duration-300">
             <MrtBrandLogo size={30} />
             <Button variant="ghost" size="sm" onClick={toggleLang} aria-label={t("common.language")}>
               <Languages className="size-4 mr-1" />
@@ -117,20 +117,24 @@ export function AppShell({ children }: { children: ReactNode }) {
           </main>
 
           {/* Mobile bottom nav */}
-          <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t grid grid-cols-5">
+          <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-card/85 backdrop-blur-md border-t shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.15)] grid grid-cols-5">
             {MOBILE_NAV.map((n) => {
               const active = n.to === "/" ? pathname === "/" : pathname.startsWith(n.to);
               const isTicket = n.to === "/tickets" && readyTicket;
               return (
                 <Link key={n.to} to={n.to} className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] min-h-14 transition-colors duration-300 ease-out",
+                  "relative flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] min-h-14 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                   active ? "text-primary" : "text-muted-foreground",
                   isTicket && "text-primary"
                 )}>
+                  <span className={cn(
+                    "absolute top-0 left-1/2 -translate-x-1/2 h-0.5 rounded-full bg-primary transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                    active ? "w-8 opacity-100" : "w-0 opacity-0"
+                  )} />
                   <div className={cn(
-                    "grid place-items-center size-8 rounded-full transition-all duration-300 ease-out",
+                    "grid place-items-center size-8 rounded-full transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                     isTicket && !active && "bg-primary text-primary-foreground",
-                    active ? "bg-primary/10 scale-110" : "scale-100"
+                    active ? "bg-primary/10 scale-110 -translate-y-0.5" : "scale-100"
                   )}>
                     <n.icon className="size-4" />
                   </div>
@@ -138,6 +142,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </Link>
               );
             })}
+
           </nav>
         </div>
       </div>
