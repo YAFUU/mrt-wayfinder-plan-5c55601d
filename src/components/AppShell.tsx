@@ -64,13 +64,20 @@ export function AppShell({ children }: { children: ReactNode }) {
               const active = n.to === "/" ? pathname === "/" : pathname.startsWith(n.to);
               return (
                 <Link key={n.to} to={n.to} className={cn(
-                  "group relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ease-out",
-                  active ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-sidebar-accent hover:translate-x-0.5"
+                  "group relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  active
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                    : "hover:bg-sidebar-accent hover:translate-x-0.5"
                 )}>
-                  <n.icon className={cn("size-4 transition-transform duration-300", active ? "scale-110" : "group-hover:scale-110")} /> {t(n.key)}
+                  <span className={cn(
+                    "absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-primary-foreground transition-all duration-300 ease-out",
+                    active ? "opacity-100 scale-y-100" : "opacity-0 scale-y-50"
+                  )} />
+                  <n.icon className={cn("size-4 transition-transform duration-300 ease-out", active ? "scale-110" : "group-hover:scale-110")} /> {t(n.key)}
                 </Link>
               );
             })}
+
             <div className="pt-2 mt-2 border-t space-y-0.5">
               {BOTTOM.map((n) => {
                 const active = pathname.startsWith(n.to);
