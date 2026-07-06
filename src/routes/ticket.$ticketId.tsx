@@ -186,14 +186,46 @@ function TicketPage() {
         </div>
       </Card>
 
+      {isActive && (
+        <Card className="mt-4 p-4 flex items-center gap-3">
+          <div className="size-10 rounded-full bg-primary/10 grid place-items-center">
+            <Radio className={`size-5 text-primary ${live.status === "watching" ? "animate-pulse" : ""}`} />
+          </div>
+          <div className="flex-1 min-w-0 text-xs">
+            <p className="font-semibold text-sm">บัตร RFID · ใช้ได้เฉพาะสถานีที่เลือก</p>
+            {live.status === "watching" ? (
+              ticket.status === "ready_to_enter" ? (
+                <p className="text-muted-foreground">
+                  {atOrigin
+                    ? `พร้อมแตะเข้าที่ ${origin.nameTh}`
+                    : `เดินไปยัง ${origin.nameTh} เพื่อเข้า (ห่าง ${Math.round(dOrigin ?? 0)} ม.)`}
+                </p>
+              ) : (
+                <p className="text-muted-foreground">
+                  {atDestination
+                    ? `พร้อมแตะออกที่ ${destination.nameTh}`
+                    : `ออกได้เฉพาะ ${destination.nameTh} (ห่าง ${Math.round(dDest ?? 0)} ม.)`}
+                </p>
+              )
+            ) : (
+              <p className="text-muted-foreground">เปิดตำแหน่งเพื่อให้ระบบตรวจว่าคุณอยู่สถานีที่ถูกต้อง</p>
+            )}
+          </div>
+          {live.status !== "watching" && (
+            <Button size="sm" variant="outline" onClick={live.start}>เปิด GPS</Button>
+          )}
+        </Card>
+      )}
+
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <Button onClick={scanIn} disabled={ticket.status !== "ready_to_enter"}><LogIn className="size-4 mr-1" /> {t("ticket.scanIn")}</Button>
-        <Button onClick={scanOut} disabled={ticket.status !== "in_journey"} variant="secondary"><LogOut className="size-4 mr-1" /> {t("ticket.scanOut")}</Button>
+        <Button onClick={scanIn} disabled={ticket.status !== "ready_to_enter"}><LogIn className="size-4 mr-1" /> แตะเข้า (RFID)</Button>
+        <Button onClick={scanOut} disabled={ticket.status !== "in_journey"} variant="secondary"><LogOut className="size-4 mr-1" /> แตะออก (RFID)</Button>
         <Button variant="outline" onClick={boost}><Sun className="size-4 mr-1" /> {t("ticket.brightness")}</Button>
         <Button variant="outline" onClick={share}><Share2 className="size-4 mr-1" /> {t("common.share")}</Button>
         <Button variant="outline" asChild><Link to="/help"><HelpCircle className="size-4 mr-1" /> {t("ticket.help")}</Link></Button>
         <Button variant="outline" onClick={() => nav({ to: "/tickets" })}><Receipt className="size-4 mr-1" /> {t("ticket.myTickets")}</Button>
       </div>
+
 
       <div className="mt-4"><DemoDisclaimer tone="warn">{t("demo.qrTicket")}</DemoDisclaimer></div>
     </div>
