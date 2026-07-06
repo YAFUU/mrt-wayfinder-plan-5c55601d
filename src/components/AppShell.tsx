@@ -1,8 +1,10 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 import {
   Home, Search, Map, Ticket, Timer, Repeat, Users, HelpCircle,
-  Accessibility as A11y, Database, Settings2, Languages,
+  Accessibility as A11y, Database, Settings2, Languages, Wallet,
+  BookOpen, LogIn, LogOut,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { MrtBrandLogo } from "./MrtBrandLogo";
@@ -10,6 +12,10 @@ import { toggleLang } from "@/hooks/useApplyProfile";
 import { useProfile, useTickets } from "@/hooks/useStore";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { FirstTimeTour } from "@/components/FirstTimeTour";
+import { useQueueStore } from "@/stores/queueStore";
+import { storage } from "@/services/storageService";
+import { toast } from "sonner";
 
 interface NavItem { to: string; icon: typeof Home; key: string; }
 const NAV: NavItem[] = [
