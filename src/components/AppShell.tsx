@@ -24,8 +24,10 @@ const NAV: NavItem[] = [
   { to: "/map", icon: Map, key: "nav.map" },
   { to: "/tickets", icon: Ticket, key: "nav.tickets" },
   { to: "/queue", icon: Timer, key: "nav.queue" },
+  { to: "/wallet", icon: Wallet, key: "nav.wallet" },
   { to: "/trips", icon: Repeat, key: "nav.trips" },
   { to: "/family", icon: Users, key: "nav.family" },
+  { to: "/guide", icon: BookOpen, key: "nav.guide" },
   { to: "/help", icon: HelpCircle, key: "nav.help" },
 ];
 const BOTTOM: NavItem[] = [
@@ -37,9 +39,9 @@ const BOTTOM: NavItem[] = [
 const MOBILE_NAV: NavItem[] = [
   { to: "/", icon: Home, key: "nav.home" },
   { to: "/search", icon: Search, key: "nav.search" },
+  { to: "/wallet", icon: Wallet, key: "nav.wallet" },
   { to: "/tickets", icon: Ticket, key: "nav.tickets" },
   { to: "/queue", icon: Timer, key: "nav.queue" },
-  { to: "/accessibility", icon: A11y, key: "nav.accessibility" },
 ];
 
 function DemoBanner() {
