@@ -30,7 +30,7 @@ function LoginPage() {
 
   return (
     <div className="p-4 lg:p-8 max-w-md mx-auto">
-      <PageHeader title="เข้าสู่ระบบ" description="ใช้บัญชีของคุณเพื่อเก็บกระเป๋าเงินและตั๋วไว้กับบัญชี" />
+      <PageHeader title="เข้าสู่ระบบ" subtitle="ใช้บัญชีของคุณเพื่อเก็บกระเป๋าเงินและตั๋วไว้กับบัญชี" />
       <Card className="p-6">
         <form onSubmit={submit} className="space-y-4">
           <div>

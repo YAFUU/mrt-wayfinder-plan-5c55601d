@@ -24,7 +24,7 @@ const STEPS: Step[] = [
 function GuidePage() {
   return (
     <div className="p-4 lg:p-8 max-w-3xl mx-auto space-y-4">
-      <PageHeader title="คู่มือการใช้งาน" description="ทำความรู้จักกับ MRT QuickPass ภายในไม่กี่นาที" />
+      <PageHeader title="คู่มือการใช้งาน" subtitle="ทำความรู้จักกับ MRT QuickPass ภายในไม่กี่นาที" />
 
       <div className="grid gap-3">
         {STEPS.map((s, i) => {

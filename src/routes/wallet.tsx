@@ -40,7 +40,7 @@ function WalletPage() {
         <PageHeader title="กระเป๋าเงิน" />
         <EmptyState
           title="กรุณาเข้าสู่ระบบ"
-          description="ต้องเข้าสู่ระบบก่อนจึงจะเติมเงินและใช้กระเป๋าได้"
+          subtitle="ต้องเข้าสู่ระบบก่อนจึงจะเติมเงินและใช้กระเป๋าได้"
           action={<Button asChild><Link to="/auth/login">เข้าสู่ระบบ</Link></Button>}
         />
       </div>
@@ -49,7 +49,7 @@ function WalletPage() {
 
   return (
     <div className="p-4 lg:p-8 max-w-2xl mx-auto space-y-4">
-      <PageHeader title="กระเป๋าเงิน" description="เติมเงินไว้ล่วงหน้าเพื่อจ่ายค่าโดยสารได้รวดเร็ว" />
+      <PageHeader title="กระเป๋าเงิน" subtitle="เติมเงินไว้ล่วงหน้าเพื่อจ่ายค่าโดยสารได้รวดเร็ว" />
 
       <Card className="p-6 bg-gradient-to-br from-primary to-mrt-blue text-primary-foreground border-0 shadow-lg">
         <div className="flex items-center gap-2 text-sm opacity-90">

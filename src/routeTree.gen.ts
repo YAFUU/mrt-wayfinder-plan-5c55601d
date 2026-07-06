@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as TripsRouteImport } from './routes/trips'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as SearchRouteImport } from './routes/search'
@@ -16,6 +17,7 @@ import { Route as QueueRouteImport } from './routes/queue'
 import { Route as PlanRouteImport } from './routes/plan'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as HelpRouteImport } from './routes/help'
+import { Route as GuideRouteImport } from './routes/guide'
 import { Route as FamilyRouteImport } from './routes/family'
 import { Route as DataSourcesRouteImport } from './routes/data-sources'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -23,7 +25,14 @@ import { Route as AdminDemoRouteImport } from './routes/admin-demo'
 import { Route as AccessibilityRouteImport } from './routes/accessibility'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TicketTicketIdRouteImport } from './routes/ticket.$ticketId'
+import { Route as AuthRegisterRouteImport } from './routes/auth.register'
+import { Route as AuthLoginRouteImport } from './routes/auth.login'
 
+const WalletRoute = WalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TripsRoute = TripsRouteImport.update({
   id: '/trips',
   path: '/trips',
@@ -57,6 +66,11 @@ const MapRoute = MapRouteImport.update({
 const HelpRoute = HelpRouteImport.update({
   id: '/help',
   path: '/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuideRoute = GuideRouteImport.update({
+  id: '/guide',
+  path: '/guide',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FamilyRoute = FamilyRouteImport.update({
@@ -94,6 +108,16 @@ const TicketTicketIdRoute = TicketTicketIdRouteImport.update({
   path: '/ticket/$ticketId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/auth/register',
+  path: '/auth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -102,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/data-sources': typeof DataSourcesRoute
   '/family': typeof FamilyRoute
+  '/guide': typeof GuideRoute
   '/help': typeof HelpRoute
   '/map': typeof MapRoute
   '/plan': typeof PlanRoute
@@ -109,6 +134,9 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/tickets': typeof TicketsRoute
   '/trips': typeof TripsRoute
+  '/wallet': typeof WalletRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
 }
 export interface FileRoutesByTo {
@@ -118,6 +146,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/data-sources': typeof DataSourcesRoute
   '/family': typeof FamilyRoute
+  '/guide': typeof GuideRoute
   '/help': typeof HelpRoute
   '/map': typeof MapRoute
   '/plan': typeof PlanRoute
@@ -125,6 +154,9 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/tickets': typeof TicketsRoute
   '/trips': typeof TripsRoute
+  '/wallet': typeof WalletRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
 }
 export interface FileRoutesById {
@@ -135,6 +167,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/data-sources': typeof DataSourcesRoute
   '/family': typeof FamilyRoute
+  '/guide': typeof GuideRoute
   '/help': typeof HelpRoute
   '/map': typeof MapRoute
   '/plan': typeof PlanRoute
@@ -142,6 +175,9 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/tickets': typeof TicketsRoute
   '/trips': typeof TripsRoute
+  '/wallet': typeof WalletRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
 }
 export interface FileRouteTypes {
@@ -153,6 +189,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/data-sources'
     | '/family'
+    | '/guide'
     | '/help'
     | '/map'
     | '/plan'
@@ -160,6 +197,9 @@ export interface FileRouteTypes {
     | '/search'
     | '/tickets'
     | '/trips'
+    | '/wallet'
+    | '/auth/login'
+    | '/auth/register'
     | '/ticket/$ticketId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -169,6 +209,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/data-sources'
     | '/family'
+    | '/guide'
     | '/help'
     | '/map'
     | '/plan'
@@ -176,6 +217,9 @@ export interface FileRouteTypes {
     | '/search'
     | '/tickets'
     | '/trips'
+    | '/wallet'
+    | '/auth/login'
+    | '/auth/register'
     | '/ticket/$ticketId'
   id:
     | '__root__'
@@ -185,6 +229,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/data-sources'
     | '/family'
+    | '/guide'
     | '/help'
     | '/map'
     | '/plan'
@@ -192,6 +237,9 @@ export interface FileRouteTypes {
     | '/search'
     | '/tickets'
     | '/trips'
+    | '/wallet'
+    | '/auth/login'
+    | '/auth/register'
     | '/ticket/$ticketId'
   fileRoutesById: FileRoutesById
 }
@@ -202,6 +250,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   DataSourcesRoute: typeof DataSourcesRoute
   FamilyRoute: typeof FamilyRoute
+  GuideRoute: typeof GuideRoute
   HelpRoute: typeof HelpRoute
   MapRoute: typeof MapRoute
   PlanRoute: typeof PlanRoute
@@ -209,11 +258,21 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   TicketsRoute: typeof TicketsRoute
   TripsRoute: typeof TripsRoute
+  WalletRoute: typeof WalletRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
   TicketTicketIdRoute: typeof TicketTicketIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wallet': {
+      id: '/wallet'
+      path: '/wallet'
+      fullPath: '/wallet'
+      preLoaderRoute: typeof WalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/trips': {
       id: '/trips'
       path: '/trips'
@@ -261,6 +320,13 @@ declare module '@tanstack/react-router' {
       path: '/help'
       fullPath: '/help'
       preLoaderRoute: typeof HelpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guide': {
+      id: '/guide'
+      path: '/guide'
+      fullPath: '/guide'
+      preLoaderRoute: typeof GuideRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/family': {
@@ -312,6 +378,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TicketTicketIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/register': {
+      id: '/auth/register'
+      path: '/auth/register'
+      fullPath: '/auth/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -322,6 +402,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   DataSourcesRoute: DataSourcesRoute,
   FamilyRoute: FamilyRoute,
+  GuideRoute: GuideRoute,
   HelpRoute: HelpRoute,
   MapRoute: MapRoute,
   PlanRoute: PlanRoute,
@@ -329,6 +410,9 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   TicketsRoute: TicketsRoute,
   TripsRoute: TripsRoute,
+  WalletRoute: WalletRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  AuthRegisterRoute: AuthRegisterRoute,
   TicketTicketIdRoute: TicketTicketIdRoute,
 }
 export const routeTree = rootRouteImport
