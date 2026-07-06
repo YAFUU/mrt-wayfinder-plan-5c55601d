@@ -38,7 +38,7 @@ function WalletPage() {
         <PageHeader title="กระเป๋าเงิน" />
         <EmptyState
           title="กรุณาเข้าสู่ระบบ"
-          subtitle="ต้องเข้าสู่ระบบก่อนจึงจะเติมเงินและใช้กระเป๋าได้"
+          description="ต้องเข้าสู่ระบบก่อนจึงจะเติมเงินและใช้กระเป๋าได้"
           action={<Button asChild><Link to="/auth/login">เข้าสู่ระบบ</Link></Button>}
         />
       </div>
