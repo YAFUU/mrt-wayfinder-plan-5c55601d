@@ -162,11 +162,32 @@ export interface SupportRequest {
 export interface UserProfile {
   id: string;
   isGuest: boolean;
+  isAuthenticated?: boolean;
+  email?: string;
   displayName: string;
   preferredLanguage: "th" | "en";
   fontSize: "normal" | "large" | "xlarge";
   highContrast: boolean;
   reduceMotion: boolean;
   autoBrightnessOnQr: boolean;
+  hasSeenTour?: boolean;
+  walletBalance?: number;
+  createdAt: string;
+}
+
+export interface WalletTransaction {
+  id: string;
+  userId: string;
+  type: "topup" | "spend" | "refund";
+  amount: number;
+  balanceAfter: number;
+  note?: string;
+  createdAt: string;
+}
+
+export interface AuthAccount {
+  email: string;
+  passwordHash: string;
+  displayName: string;
   createdAt: string;
 }

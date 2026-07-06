@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PageHeader, DemoDisclaimer, EmptyState } from "@/components/common";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sun, Share2, LogIn, LogOut, HelpCircle, Receipt, Sparkles } from "lucide-react";
+import { Sun, Share2, LogIn, LogOut, HelpCircle, Receipt, Sparkles, Radio } from "lucide-react";
+import { useLiveLocation } from "@/hooks/useLiveLocation";
 import { getStation } from "@/services/routeService";
 import { generateQrToken, QR_ROTATE_MS } from "@/lib/qr";
 import { storage } from "@/services/storageService";
@@ -86,15 +87,37 @@ function TicketPage() {
   const validUntil = new Date(ticket.validUntil);
   const isActive = ticket.status === "ready_to_enter" || ticket.status === "in_journey";
 
+  const live = useLiveLocation(false);
+  const distTo = (s: { lat: number; lng: number }) => {
+    if (!live.coords) return null;
+    const R = 6371000, rad = (d: number) => (d * Math.PI) / 180;
+    const dLat = rad(s.lat - live.coords.lat), dLng = rad(s.lng - live.coords.lng);
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(rad(live.coords.lat)) * Math.cos(rad(s.lat)) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(a));
+  };
+  const GATE_RADIUS = 250;
+  const dOrigin = distTo(origin);
+  const dDest = distTo(destination);
+  const atOrigin = dOrigin != null && dOrigin <= GATE_RADIUS;
+  const atDestination = dDest != null && dDest <= GATE_RADIUS;
+
   const scanIn = () => {
     if (ticket.status !== "ready_to_enter") return;
+    if (live.status === "watching" && !atOrigin) {
+      toast.error(`บัตร RFID ใช้ได้เฉพาะที่สถานี ${origin.nameTh} เท่านั้น`);
+      return;
+    }
     storage.setTicketStatus(ticket.id, "in_journey");
-    toast.success("Scan In สำเร็จ (Demo)");
+    toast.success(`แตะบัตร RFID เข้าสถานี ${origin.nameTh} สำเร็จ (Demo)`);
   };
   const scanOut = () => {
     if (ticket.status !== "in_journey") return;
+    if (live.status === "watching" && !atDestination) {
+      toast.error(`ออกได้เฉพาะสถานีปลายทาง ${destination.nameTh} เท่านั้น`);
+      return;
+    }
     storage.setTicketStatus(ticket.id, "completed");
-    toast.success("Scan Out สำเร็จ (Demo)");
+    toast.success(`แตะบัตร RFID ออกสถานี ${destination.nameTh} สำเร็จ (Demo)`);
   };
   const boost = async () => {
     try {
@@ -163,14 +186,46 @@ function TicketPage() {
         </div>
       </Card>
 
+      {isActive && (
+        <Card className="mt-4 p-4 flex items-center gap-3">
+          <div className="size-10 rounded-full bg-primary/10 grid place-items-center">
+            <Radio className={`size-5 text-primary ${live.status === "watching" ? "animate-pulse" : ""}`} />
+          </div>
+          <div className="flex-1 min-w-0 text-xs">
+            <p className="font-semibold text-sm">บัตร RFID · ใช้ได้เฉพาะสถานีที่เลือก</p>
+            {live.status === "watching" ? (
+              ticket.status === "ready_to_enter" ? (
+                <p className="text-muted-foreground">
+                  {atOrigin
+                    ? `พร้อมแตะเข้าที่ ${origin.nameTh}`
+                    : `เดินไปยัง ${origin.nameTh} เพื่อเข้า (ห่าง ${Math.round(dOrigin ?? 0)} ม.)`}
+                </p>
+              ) : (
+                <p className="text-muted-foreground">
+                  {atDestination
+                    ? `พร้อมแตะออกที่ ${destination.nameTh}`
+                    : `ออกได้เฉพาะ ${destination.nameTh} (ห่าง ${Math.round(dDest ?? 0)} ม.)`}
+                </p>
+              )
+            ) : (
+              <p className="text-muted-foreground">เปิดตำแหน่งเพื่อให้ระบบตรวจว่าคุณอยู่สถานีที่ถูกต้อง</p>
+            )}
+          </div>
+          {live.status !== "watching" && (
+            <Button size="sm" variant="outline" onClick={live.start}>เปิด GPS</Button>
+          )}
+        </Card>
+      )}
+
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <Button onClick={scanIn} disabled={ticket.status !== "ready_to_enter"}><LogIn className="size-4 mr-1" /> {t("ticket.scanIn")}</Button>
-        <Button onClick={scanOut} disabled={ticket.status !== "in_journey"} variant="secondary"><LogOut className="size-4 mr-1" /> {t("ticket.scanOut")}</Button>
+        <Button onClick={scanIn} disabled={ticket.status !== "ready_to_enter"}><LogIn className="size-4 mr-1" /> แตะเข้า (RFID)</Button>
+        <Button onClick={scanOut} disabled={ticket.status !== "in_journey"} variant="secondary"><LogOut className="size-4 mr-1" /> แตะออก (RFID)</Button>
         <Button variant="outline" onClick={boost}><Sun className="size-4 mr-1" /> {t("ticket.brightness")}</Button>
         <Button variant="outline" onClick={share}><Share2 className="size-4 mr-1" /> {t("common.share")}</Button>
         <Button variant="outline" asChild><Link to="/help"><HelpCircle className="size-4 mr-1" /> {t("ticket.help")}</Link></Button>
         <Button variant="outline" onClick={() => nav({ to: "/tickets" })}><Receipt className="size-4 mr-1" /> {t("ticket.myTickets")}</Button>
       </div>
+
 
       <div className="mt-4"><DemoDisclaimer tone="warn">{t("demo.qrTicket")}</DemoDisclaimer></div>
     </div>

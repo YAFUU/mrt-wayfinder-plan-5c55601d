@@ -25,11 +25,15 @@ function id(prefix: string) {
 export async function createPaymentIntent(input: CreatePaymentIntentInput): Promise<PaymentIntent> {
   const total = input.amountPerPassenger * input.passengers.length;
   const profile = storage.getProfile();
+  if (input.method === "wallet") {
+    const bal = storage.getWalletBalance();
+    if (bal < total) throw new Error(`ยอดเงินในกระเป๋าไม่พอ (คงเหลือ ฿${bal})`);
+  }
   const tx: PaymentTransaction = {
     id: id("TX"),
     userId: profile.id,
     ticketIds: [],
-    provider: "mock",
+    provider: input.method === "wallet" ? "wallet" : "mock",
     providerReference: id("REF"),
     method: input.method,
     amount: total,
@@ -61,6 +65,15 @@ export async function confirmPayment(
     storage.updateTransaction(transactionId, { status: "failed" });
     return { status: "failed", ticketIds: [] };
   }
+
+  if (input.method === "wallet") {
+    const spent = storage.walletSpend(tx.amount, `ค่าโดยสาร ${input.originStationId} → ${input.destinationStationId}`);
+    if (!spent) {
+      storage.updateTransaction(transactionId, { status: "failed" });
+      throw new Error("ยอดเงินในกระเป๋าไม่พอ");
+    }
+  }
+
 
   const profile = storage.getProfile();
   const validUntil = new Date(Date.now() + 4 * 3600 * 1000).toISOString();

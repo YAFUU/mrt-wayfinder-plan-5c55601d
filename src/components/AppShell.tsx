@@ -1,8 +1,10 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 import {
   Home, Search, Map, Ticket, Timer, Repeat, Users, HelpCircle,
-  Accessibility as A11y, Database, Settings2, Languages,
+  Accessibility as A11y, Database, Settings2, Languages, Wallet,
+  BookOpen, LogIn, LogOut,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { MrtBrandLogo } from "./MrtBrandLogo";
@@ -10,6 +12,10 @@ import { toggleLang } from "@/hooks/useApplyProfile";
 import { useProfile, useTickets } from "@/hooks/useStore";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { FirstTimeTour } from "@/components/FirstTimeTour";
+import { useQueueStore } from "@/stores/queueStore";
+import { storage } from "@/services/storageService";
+import { toast } from "sonner";
 
 interface NavItem { to: string; icon: typeof Home; key: string; }
 const NAV: NavItem[] = [
@@ -18,8 +24,10 @@ const NAV: NavItem[] = [
   { to: "/map", icon: Map, key: "nav.map" },
   { to: "/tickets", icon: Ticket, key: "nav.tickets" },
   { to: "/queue", icon: Timer, key: "nav.queue" },
+  { to: "/wallet", icon: Wallet, key: "nav.wallet" },
   { to: "/trips", icon: Repeat, key: "nav.trips" },
   { to: "/family", icon: Users, key: "nav.family" },
+  { to: "/guide", icon: BookOpen, key: "nav.guide" },
   { to: "/help", icon: HelpCircle, key: "nav.help" },
 ];
 const BOTTOM: NavItem[] = [
@@ -31,9 +39,9 @@ const BOTTOM: NavItem[] = [
 const MOBILE_NAV: NavItem[] = [
   { to: "/", icon: Home, key: "nav.home" },
   { to: "/search", icon: Search, key: "nav.search" },
+  { to: "/wallet", icon: Wallet, key: "nav.wallet" },
   { to: "/tickets", icon: Ticket, key: "nav.tickets" },
   { to: "/queue", icon: Timer, key: "nav.queue" },
-  { to: "/accessibility", icon: A11y, key: "nav.accessibility" },
 ];
 
 function DemoBanner() {
@@ -51,9 +59,22 @@ export function AppShell({ children }: { children: ReactNode }) {
   const tickets = useTickets();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const readyTicket = tickets.find((tk) => tk.status === "ready_to_enter");
+  const tick = useQueueStore((s) => s.tick);
+
+  // Global real-time crowd-density updates (used across all pages)
+  useEffect(() => {
+    const iv = setInterval(tick, 15000);
+    return () => clearInterval(iv);
+  }, [tick]);
+
+  const handleLogout = () => {
+    storage.logout();
+    toast.success("ออกจากระบบแล้ว");
+  };
 
   return (
     <div className="min-h-dvh flex flex-col bg-background text-foreground">
+      <FirstTimeTour />
       <DemoBanner />
       <div className="flex flex-1 min-h-0">
         {/* Desktop sidebar */}
@@ -96,9 +117,20 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={toggleLang} aria-label={t("common.language")}>
               <Languages className="size-4" /> {profile.preferredLanguage === "th" ? "ไทย" : "English"}
             </Button>
-            <div className="text-xs text-muted-foreground px-2">
-              {profile.displayName} · Guest
-            </div>
+            {profile.isAuthenticated ? (
+              <>
+                <div className="text-xs text-muted-foreground px-2 truncate">
+                  {profile.displayName} · ฿{(profile.walletBalance ?? 0).toLocaleString()}
+                </div>
+                <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={handleLogout}>
+                  <LogOut className="size-4" /> {t("nav.logout")}
+                </Button>
+              </>
+            ) : (
+              <Button asChild variant="default" size="sm" className="w-full justify-start gap-2">
+                <Link to="/auth/login"><LogIn className="size-4" /> {t("nav.login")}</Link>
+              </Button>
+            )}
           </div>
         </aside>
 
