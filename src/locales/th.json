@@ -24,7 +24,11 @@
     "settings": "การตั้งค่า",
     "accessibility": "การเข้าถึง",
     "adminDemo": "Admin Demo",
-    "dataSources": "แหล่งข้อมูล"
+    "dataSources": "แหล่งข้อมูล",
+    "wallet": "กระเป๋าเงิน",
+    "guide": "คู่มือใช้งาน",
+    "login": "เข้าสู่ระบบ",
+    "logout": "ออกจากระบบ"
   },
   "common": {
     "search": "ค้นหา",
