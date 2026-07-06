@@ -117,9 +117,20 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={toggleLang} aria-label={t("common.language")}>
               <Languages className="size-4" /> {profile.preferredLanguage === "th" ? "ไทย" : "English"}
             </Button>
-            <div className="text-xs text-muted-foreground px-2">
-              {profile.displayName} · Guest
-            </div>
+            {profile.isAuthenticated ? (
+              <>
+                <div className="text-xs text-muted-foreground px-2 truncate">
+                  {profile.displayName} · ฿{(profile.walletBalance ?? 0).toLocaleString()}
+                </div>
+                <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={handleLogout}>
+                  <LogOut className="size-4" /> {t("nav.logout")}
+                </Button>
+              </>
+            ) : (
+              <Button asChild variant="default" size="sm" className="w-full justify-start gap-2">
+                <Link to="/auth/login"><LogIn className="size-4" /> {t("nav.login")}</Link>
+              </Button>
+            )}
           </div>
         </aside>
 
