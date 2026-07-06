@@ -25,11 +25,15 @@ function id(prefix: string) {
 export async function createPaymentIntent(input: CreatePaymentIntentInput): Promise<PaymentIntent> {
   const total = input.amountPerPassenger * input.passengers.length;
   const profile = storage.getProfile();
+  if (input.method === "wallet") {
+    const bal = storage.getWalletBalance();
+    if (bal < total) throw new Error(`ยอดเงินในกระเป๋าไม่พอ (คงเหลือ ฿${bal})`);
+  }
   const tx: PaymentTransaction = {
     id: id("TX"),
     userId: profile.id,
     ticketIds: [],
-    provider: "mock",
+    provider: input.method === "wallet" ? "wallet" : "mock",
     providerReference: id("REF"),
     method: input.method,
     amount: total,
