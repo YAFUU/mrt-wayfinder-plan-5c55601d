@@ -100,6 +100,38 @@ function Home() {
         </button>
       </Card>
 
+      {/* Live location card */}
+      <Card className="p-4 flex items-center gap-3">
+        <div className="size-11 rounded-full bg-primary/10 grid place-items-center shrink-0">
+          <Radar className={`size-5 text-primary ${live.status === "watching" ? "animate-pulse" : ""}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">ตำแหน่งของคุณ (Real-time)</p>
+          {live.status === "watching" && live.nearestStation ? (
+            <>
+              <p className="font-semibold truncate">
+                ใกล้สถานี {live.nearestStation.nameTh}
+                <span className="text-xs text-muted-foreground ml-1">({live.nearestStation.code})</span>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                ประมาณ {Math.round(live.distanceMeters ?? 0)} ม.
+                {nearestQueue ? ` · ความหนาแน่น ${t(`queue.${nearestQueue.queueStatus}`)} · รอ ~${nearestQueue.estimatedWaitMinutes} นาที` : ""}
+              </p>
+            </>
+          ) : live.status === "denied" ? (
+            <p className="text-sm text-muted-foreground">ไม่ได้รับสิทธิ์เข้าถึงตำแหน่ง</p>
+          ) : live.status === "unsupported" ? (
+            <p className="text-sm text-muted-foreground">อุปกรณ์ไม่รองรับ GPS</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">แชร์ตำแหน่งเพื่อดูสถานีที่คุณอยู่ใกล้ที่สุดแบบสด</p>
+          )}
+        </div>
+        {live.status !== "watching" && (
+          <Button size="sm" variant="outline" onClick={live.start}>เปิด</Button>
+        )}
+      </Card>
+
+
       {ready && (
         <Card className="p-5 bg-primary text-primary-foreground border-0">
           <p className="text-xs uppercase tracking-widest opacity-80">{t("home.readyTicket")}</p>
