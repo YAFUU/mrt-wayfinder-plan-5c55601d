@@ -8,7 +8,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sun, Share2, LogIn, LogOut, HelpCircle, Receipt, Sparkles, Radio } from "lucide-react";
 import { useLiveLocation } from "@/hooks/useLiveLocation";
-import { haversineMeters } from "@/lib/utils";
 import { getStation } from "@/services/routeService";
 import { generateQrToken, QR_ROTATE_MS } from "@/lib/qr";
 import { storage } from "@/services/storageService";
