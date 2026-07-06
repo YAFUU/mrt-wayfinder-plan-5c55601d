@@ -29,10 +29,17 @@ function Home() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [locErr, setLocErr] = useState(false);
 
+  const live = useLiveLocation(false);
+  const effectiveCoords = live.coords ?? coords;
+
   const nearby = useMemo(() => {
-    const point = coords ?? { lat: 13.7378, lng: 100.5613 }; // Sukhumvit fallback
+    const point = effectiveCoords ?? { lat: 13.7378, lng: 100.5613 };
     return nearestStations(point, 3);
-  }, [coords]);
+  }, [effectiveCoords]);
+
+  const nearestQueue = live.nearestStation
+    ? queue.find((qi) => qi.stationId === live.nearestStation!.id)
+    : null;
 
   const ready = tickets.find((tk) => tk.status === "ready_to_enter");
   const worstQueue = [...queue].sort((a, b) => b.estimatedWaitMinutes - a.estimatedWaitMinutes)[0];
