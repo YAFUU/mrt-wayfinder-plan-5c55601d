@@ -66,6 +66,15 @@ export async function confirmPayment(
     return { status: "failed", ticketIds: [] };
   }
 
+  if (input.method === "wallet") {
+    const spent = storage.walletSpend(tx.amount, `ค่าโดยสาร ${input.originStationId} → ${input.destinationStationId}`);
+    if (!spent) {
+      storage.updateTransaction(transactionId, { status: "failed" });
+      throw new Error("ยอดเงินในกระเป๋าไม่พอ");
+    }
+  }
+
+
   const profile = storage.getProfile();
   const validUntil = new Date(Date.now() + 4 * 3600 * 1000).toISOString();
   const groupId = input.passengers.length > 1 ? id("GRP") : undefined;
