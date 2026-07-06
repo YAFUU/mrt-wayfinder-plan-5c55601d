@@ -7,6 +7,7 @@ import { PageHeader, DemoDisclaimer, EmptyState } from "@/components/common";
 import { storage, subscribeStore } from "@/services/storageService";
 import { useProfile } from "@/hooks/useStore";
 import { Wallet, Plus, ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import type { WalletTransaction } from "@/types/mrt";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/wallet")({ component: WalletPage });
