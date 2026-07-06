@@ -5,7 +5,7 @@ import { PageHeader, DemoDisclaimer } from "@/components/common";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MapPin, Search, Ticket as TicketIcon, Timer } from "lucide-react";
+import { MapPin, Search, Ticket as TicketIcon, Timer, Radar, Activity } from "lucide-react";
 import { nearestStations, allStations } from "@/services/routeService";
 import { useProfile, useTickets, useSavedTrips } from "@/hooks/useStore";
 import { useQueueStore } from "@/stores/queueStore";
@@ -13,6 +13,7 @@ import { getStation } from "@/services/routeService";
 import { useTripStore } from "@/stores/tripStore";
 import { LINES } from "@/data/network";
 import { useNavigate } from "@tanstack/react-router";
+import { useLiveLocation } from "@/hooks/useLiveLocation";
 
 export const Route = createFileRoute("/")({ component: Home });
 
