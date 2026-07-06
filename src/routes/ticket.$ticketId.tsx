@@ -87,15 +87,37 @@ function TicketPage() {
   const validUntil = new Date(ticket.validUntil);
   const isActive = ticket.status === "ready_to_enter" || ticket.status === "in_journey";
 
+  const live = useLiveLocation(false);
+  const distTo = (s: { lat: number; lng: number }) => {
+    if (!live.coords) return null;
+    const R = 6371000, rad = (d: number) => (d * Math.PI) / 180;
+    const dLat = rad(s.lat - live.coords.lat), dLng = rad(s.lng - live.coords.lng);
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(rad(live.coords.lat)) * Math.cos(rad(s.lat)) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(a));
+  };
+  const GATE_RADIUS = 250;
+  const dOrigin = distTo(origin);
+  const dDest = distTo(destination);
+  const atOrigin = dOrigin != null && dOrigin <= GATE_RADIUS;
+  const atDestination = dDest != null && dDest <= GATE_RADIUS;
+
   const scanIn = () => {
     if (ticket.status !== "ready_to_enter") return;
+    if (live.status === "watching" && !atOrigin) {
+      toast.error(`บัตร RFID ใช้ได้เฉพาะที่สถานี ${origin.nameTh} เท่านั้น`);
+      return;
+    }
     storage.setTicketStatus(ticket.id, "in_journey");
-    toast.success("Scan In สำเร็จ (Demo)");
+    toast.success(`แตะบัตร RFID เข้าสถานี ${origin.nameTh} สำเร็จ (Demo)`);
   };
   const scanOut = () => {
     if (ticket.status !== "in_journey") return;
+    if (live.status === "watching" && !atDestination) {
+      toast.error(`ออกได้เฉพาะสถานีปลายทาง ${destination.nameTh} เท่านั้น`);
+      return;
+    }
     storage.setTicketStatus(ticket.id, "completed");
-    toast.success("Scan Out สำเร็จ (Demo)");
+    toast.success(`แตะบัตร RFID ออกสถานี ${destination.nameTh} สำเร็จ (Demo)`);
   };
   const boost = async () => {
     try {
