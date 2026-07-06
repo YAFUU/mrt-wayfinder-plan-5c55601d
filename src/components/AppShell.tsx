@@ -59,9 +59,22 @@ export function AppShell({ children }: { children: ReactNode }) {
   const tickets = useTickets();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const readyTicket = tickets.find((tk) => tk.status === "ready_to_enter");
+  const tick = useQueueStore((s) => s.tick);
+
+  // Global real-time crowd-density updates (used across all pages)
+  useEffect(() => {
+    const iv = setInterval(tick, 15000);
+    return () => clearInterval(iv);
+  }, [tick]);
+
+  const handleLogout = () => {
+    storage.logout();
+    toast.success("ออกจากระบบแล้ว");
+  };
 
   return (
     <div className="min-h-dvh flex flex-col bg-background text-foreground">
+      <FirstTimeTour />
       <DemoBanner />
       <div className="flex flex-1 min-h-0">
         {/* Desktop sidebar */}
