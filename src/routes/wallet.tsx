@@ -15,7 +15,7 @@ const PRESETS = [100, 200, 500, 1000];
 
 function WalletPage() {
   const profile = useProfile();
-  const [txs, setTxs] = useReactState(() => storage.listWalletTx());
+  const [txs, setTxs] = useState(() => storage.listWalletTx());
   useEffect(() => subscribeStore(() => setTxs(storage.listWalletTx())), []);
   const [amount, setAmount] = useState<number>(200);
   const [busy, setBusy] = useState(false);
