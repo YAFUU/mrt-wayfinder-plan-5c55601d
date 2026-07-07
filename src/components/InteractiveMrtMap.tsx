@@ -255,6 +255,30 @@ export function InteractiveMrtMap({ routeStations = [] as string[] }: { routeSta
         </div>
       </Card>
 
+      {/* Legend overlay — mimics the official MRT schematic legend panel */}
+      <Card className="absolute bottom-3 right-3 z-[400] p-2.5 max-w-[240px] shadow-lg hidden md:block bg-card/95 backdrop-blur">
+        <p className="text-[10px] uppercase font-semibold text-muted-foreground mb-1.5 tracking-wide">สัญลักษณ์ · Legend</p>
+        <div className="space-y-1">
+          {LINES.map((l, idx) => (
+            <div key={l.id} className="flex items-center gap-2 text-[11px]">
+              <span className="grid place-items-center size-4 rounded-full text-[9px] font-bold text-white shrink-0" style={{ background: l.color }}>
+                {idx + 1}
+              </span>
+              <span className="h-1 w-6 rounded-full shrink-0" style={{ background: l.color }} />
+              <span className="truncate text-foreground/90">{l.nameTh}</span>
+            </div>
+          ))}
+          <div className="pt-1 mt-1 border-t flex items-center gap-2 text-[11px] text-muted-foreground">
+            <span className="grid place-items-center size-4 rounded-full bg-white border-2 border-primary text-[8px] font-bold text-primary shrink-0">◉</span>
+            <span>สถานีร่วม / จุดเชื่อมต่อ</span>
+          </div>
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+            <span className="h-1 w-6 rounded-full shrink-0 bg-[repeating-linear-gradient(90deg,#94a3b8_0_3px,transparent_3px_6px)]" />
+            <span>เส้นทางในอนาคต</span>
+          </div>
+        </div>
+      </Card>
+
       {/* Station detail */}
       {selected && (
         <Card className="absolute bottom-3 inset-x-3 lg:right-3 lg:left-auto lg:w-80 z-[500] p-4 shadow-xl">
