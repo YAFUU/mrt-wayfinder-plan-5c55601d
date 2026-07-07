@@ -41,6 +41,11 @@ function LoginPage() {
             <Label htmlFor="pw">รหัสผ่าน</Label>
             <Input id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
           </div>
+          <div className="flex justify-end -mt-2">
+            <Link to="/auth/forgot" className="text-xs text-primary hover:underline font-medium">
+              ลืมรหัสผ่าน?
+            </Link>
+          </div>
           <Button type="submit" className="w-full h-11" disabled={busy}>
             <LogIn className="size-4 mr-1.5" /> {busy ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบ"}
           </Button>
