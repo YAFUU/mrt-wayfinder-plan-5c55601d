@@ -14,6 +14,7 @@ import { Route as TripsRouteImport } from './routes/trips'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as QueueRouteImport } from './routes/queue'
+import { Route as PolicyRouteImport } from './routes/policy'
 import { Route as PlanRouteImport } from './routes/plan'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as HelpRouteImport } from './routes/help'
@@ -27,6 +28,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as TicketTicketIdRouteImport } from './routes/ticket.$ticketId'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as AuthForgotRouteImport } from './routes/auth.forgot'
 
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
@@ -51,6 +53,11 @@ const SearchRoute = SearchRouteImport.update({
 const QueueRoute = QueueRouteImport.update({
   id: '/queue',
   path: '/queue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PolicyRoute = PolicyRouteImport.update({
+  id: '/policy',
+  path: '/policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlanRoute = PlanRouteImport.update({
@@ -118,6 +125,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthForgotRoute = AuthForgotRouteImport.update({
+  id: '/auth/forgot',
+  path: '/auth/forgot',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -130,11 +142,13 @@ export interface FileRoutesByFullPath {
   '/help': typeof HelpRoute
   '/map': typeof MapRoute
   '/plan': typeof PlanRoute
+  '/policy': typeof PolicyRoute
   '/queue': typeof QueueRoute
   '/search': typeof SearchRoute
   '/tickets': typeof TicketsRoute
   '/trips': typeof TripsRoute
   '/wallet': typeof WalletRoute
+  '/auth/forgot': typeof AuthForgotRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
@@ -150,11 +164,13 @@ export interface FileRoutesByTo {
   '/help': typeof HelpRoute
   '/map': typeof MapRoute
   '/plan': typeof PlanRoute
+  '/policy': typeof PolicyRoute
   '/queue': typeof QueueRoute
   '/search': typeof SearchRoute
   '/tickets': typeof TicketsRoute
   '/trips': typeof TripsRoute
   '/wallet': typeof WalletRoute
+  '/auth/forgot': typeof AuthForgotRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
@@ -171,11 +187,13 @@ export interface FileRoutesById {
   '/help': typeof HelpRoute
   '/map': typeof MapRoute
   '/plan': typeof PlanRoute
+  '/policy': typeof PolicyRoute
   '/queue': typeof QueueRoute
   '/search': typeof SearchRoute
   '/tickets': typeof TicketsRoute
   '/trips': typeof TripsRoute
   '/wallet': typeof WalletRoute
+  '/auth/forgot': typeof AuthForgotRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
@@ -193,11 +211,13 @@ export interface FileRouteTypes {
     | '/help'
     | '/map'
     | '/plan'
+    | '/policy'
     | '/queue'
     | '/search'
     | '/tickets'
     | '/trips'
     | '/wallet'
+    | '/auth/forgot'
     | '/auth/login'
     | '/auth/register'
     | '/ticket/$ticketId'
@@ -213,11 +233,13 @@ export interface FileRouteTypes {
     | '/help'
     | '/map'
     | '/plan'
+    | '/policy'
     | '/queue'
     | '/search'
     | '/tickets'
     | '/trips'
     | '/wallet'
+    | '/auth/forgot'
     | '/auth/login'
     | '/auth/register'
     | '/ticket/$ticketId'
@@ -233,11 +255,13 @@ export interface FileRouteTypes {
     | '/help'
     | '/map'
     | '/plan'
+    | '/policy'
     | '/queue'
     | '/search'
     | '/tickets'
     | '/trips'
     | '/wallet'
+    | '/auth/forgot'
     | '/auth/login'
     | '/auth/register'
     | '/ticket/$ticketId'
@@ -254,11 +278,13 @@ export interface RootRouteChildren {
   HelpRoute: typeof HelpRoute
   MapRoute: typeof MapRoute
   PlanRoute: typeof PlanRoute
+  PolicyRoute: typeof PolicyRoute
   QueueRoute: typeof QueueRoute
   SearchRoute: typeof SearchRoute
   TicketsRoute: typeof TicketsRoute
   TripsRoute: typeof TripsRoute
   WalletRoute: typeof WalletRoute
+  AuthForgotRoute: typeof AuthForgotRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
   TicketTicketIdRoute: typeof TicketTicketIdRoute
@@ -299,6 +325,13 @@ declare module '@tanstack/react-router' {
       path: '/queue'
       fullPath: '/queue'
       preLoaderRoute: typeof QueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/policy': {
+      id: '/policy'
+      path: '/policy'
+      fullPath: '/policy'
+      preLoaderRoute: typeof PolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/plan': {
@@ -392,6 +425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/forgot': {
+      id: '/auth/forgot'
+      path: '/auth/forgot'
+      fullPath: '/auth/forgot'
+      preLoaderRoute: typeof AuthForgotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -406,11 +446,13 @@ const rootRouteChildren: RootRouteChildren = {
   HelpRoute: HelpRoute,
   MapRoute: MapRoute,
   PlanRoute: PlanRoute,
+  PolicyRoute: PolicyRoute,
   QueueRoute: QueueRoute,
   SearchRoute: SearchRoute,
   TicketsRoute: TicketsRoute,
   TripsRoute: TripsRoute,
   WalletRoute: WalletRoute,
+  AuthForgotRoute: AuthForgotRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
   TicketTicketIdRoute: TicketTicketIdRoute,

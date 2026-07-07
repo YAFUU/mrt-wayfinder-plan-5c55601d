@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/common";
-import { Shield, Lock, Database, Cookie, UserCheck, Mail, AlertTriangle } from "lucide-react";
+import { Shield, Lock, Database, Cookie, UserCheck, Mail, AlertTriangle, MapPin } from "lucide-react";
 
 export const Route = createFileRoute("/policy")({
   component: PolicyPage,
@@ -21,7 +21,7 @@ const SECTIONS: Section[] = [
     body: "MRT QuickPass เป็นต้นแบบ (prototype) เพื่อการสาธิตเท่านั้น ข้อมูลบัญชี กระเป๋าเงิน ประวัติการเดินทาง และตั๋วของคุณ ถูกจัดเก็บไว้ใน localStorage บนอุปกรณ์นี้เท่านั้น ไม่มีการส่งไปยังเซิร์ฟเวอร์ของเรา",
   },
   {
-    icon: MapPinIconAlt(), title: "ตำแหน่งที่ตั้ง",
+    icon: MapPin, title: "ตำแหน่งที่ตั้ง",
     body: "เมื่อคุณอนุญาตให้ใช้ตำแหน่ง (Geolocation) เราจะใช้พิกัดของคุณเฉพาะภายในเบราว์เซอร์เพื่อคำนวณสถานี MRT ที่ใกล้ที่สุดเท่านั้น ข้อมูลจะไม่ถูกบันทึกหรือส่งออกไปที่ใด และคุณสามารถปิดการเข้าถึงได้ทุกเมื่อจากการตั้งค่าเบราว์เซอร์",
   },
   {
@@ -46,13 +46,8 @@ const SECTIONS: Section[] = [
   },
 ];
 
-// Local wrapper to avoid an extra import
-function MapPinIconAlt() {
-  // Reuse lucide's MapPin at runtime by direct import to keep tree-shake friendly
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { MapPin } = require("lucide-react");
-  return MapPin;
-}
+
+
 
 function PolicyPage() {
   return (
