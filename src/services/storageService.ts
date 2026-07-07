@@ -246,6 +246,15 @@ export const storage = {
     };
     save();
   },
+  resetPassword(email: string, newPassword: string): { ok: boolean; error?: string } {
+    const s = state();
+    const norm = email.trim().toLowerCase();
+    const acc = s.accounts.find((a) => a.email === norm);
+    if (!acc) return { ok: false, error: "ไม่พบบัญชีนี้ในระบบ" };
+    acc.passwordHash = hashPw(newPassword);
+    save();
+    return { ok: true };
+  },
 
   reset() {
     cache = emptyStore();

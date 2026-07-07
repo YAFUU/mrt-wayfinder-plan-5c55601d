@@ -161,31 +161,37 @@ export function InteractiveMrtMap({ routeStations = [] as string[] }: { routeSta
       overlaysRef.current.push(poly);
     });
 
-    // Stations
+    // Stations — circular badge with code inside, mimicking the official MRT schematic
     STATIONS.filter((s) => visible[s.lineId]).forEach((s) => {
       const line = LINES.find((l) => l.id === s.lineId)!;
       const inRoute = routeSet.has(s.id);
-      const fill = inRoute ? "#0B2344" : "#ffffff";
+      const isInterchange = s.isInterchange;
+      const size = isInterchange ? 28 : inRoute ? 24 : 22;
       const stroke = inRoute ? "#0B2344" : line.color;
+      const fill = inRoute ? line.color : "#ffffff";
       const textColor = inRoute ? "#ffffff" : "#0B2344";
       const label = s.code;
-      const w = Math.max(34, 10 + label.length * 6);
-      const h = 20;
+      const r = size / 2 - 2;
+      const cx = size / 2;
       const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-  <rect x="1" y="1" rx="10" ry="10" width="${w - 2}" height="${h - 2}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
-  <text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="10" font-weight="700" fill="${textColor}">${label}</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+  ${isInterchange ? `<circle cx="${cx}" cy="${cx}" r="${r + 1.5}" fill="#0B2344" opacity="0.15"/>` : ""}
+  <circle cx="${cx}" cy="${cx}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>
+  <text x="50%" y="52%" dominant-baseline="middle" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="${size >= 26 ? 8 : 7}" font-weight="800" fill="${textColor}">${label}</text>
 </svg>`;
       const marker = new g.maps.Marker({
         position: { lat: s.lat, lng: s.lng },
         map,
-        title: `${s.nameTh} (${s.code})`,
+        title: `${s.code} · ${s.nameTh} (${s.nameEn})`,
         icon: {
           url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-          scaledSize: new g.maps.Size(w, h),
-          anchor: new g.maps.Point(w / 2, h / 2),
+          scaledSize: new g.maps.Size(size, size),
+          anchor: new g.maps.Point(size / 2, size / 2),
         },
-        zIndex: s.isInterchange ? 20 : inRoute ? 15 : 10,
+        label: (map.getZoom() ?? 11) >= 14
+          ? { text: s.nameTh, color: "#0B2344", fontSize: "10px", fontWeight: "600", className: "mrt-station-label" }
+          : undefined,
+        zIndex: isInterchange ? 20 : inRoute ? 15 : 10,
       });
       marker.addListener("click", () => setSelected(s));
       overlaysRef.current.push(marker);
@@ -246,6 +252,30 @@ export function InteractiveMrtMap({ routeStations = [] as string[] }: { routeSta
               {l.status !== "operational" && <span className="text-[9px] text-warning">({t("map.future")})</span>}
             </label>
           ))}
+        </div>
+      </Card>
+
+      {/* Legend overlay — mimics the official MRT schematic legend panel */}
+      <Card className="absolute bottom-3 right-3 z-[400] p-2.5 max-w-[240px] shadow-lg hidden md:block bg-card/95 backdrop-blur">
+        <p className="text-[10px] uppercase font-semibold text-muted-foreground mb-1.5 tracking-wide">สัญลักษณ์ · Legend</p>
+        <div className="space-y-1">
+          {LINES.map((l, idx) => (
+            <div key={l.id} className="flex items-center gap-2 text-[11px]">
+              <span className="grid place-items-center size-4 rounded-full text-[9px] font-bold text-white shrink-0" style={{ background: l.color }}>
+                {idx + 1}
+              </span>
+              <span className="h-1 w-6 rounded-full shrink-0" style={{ background: l.color }} />
+              <span className="truncate text-foreground/90">{l.nameTh}</span>
+            </div>
+          ))}
+          <div className="pt-1 mt-1 border-t flex items-center gap-2 text-[11px] text-muted-foreground">
+            <span className="grid place-items-center size-4 rounded-full bg-white border-2 border-primary text-[8px] font-bold text-primary shrink-0">◉</span>
+            <span>สถานีร่วม / จุดเชื่อมต่อ</span>
+          </div>
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+            <span className="h-1 w-6 rounded-full shrink-0 bg-[repeating-linear-gradient(90deg,#94a3b8_0_3px,transparent_3px_6px)]" />
+            <span>เส้นทางในอนาคต</span>
+          </div>
         </div>
       </Card>
 

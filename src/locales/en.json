@@ -13,7 +13,7 @@
     "queue": "Queues", "trips": "Saved Trips", "family": "Group Ticket",
     "help": "Help", "profile": "Profile", "settings": "Settings",
     "accessibility": "Accessibility", "adminDemo": "Admin Demo", "dataSources": "Data Sources",
-    "wallet": "Wallet", "guide": "Guide", "login": "Sign in", "logout": "Sign out"
+    "wallet": "Wallet", "guide": "Guide", "policy": "Policy", "login": "Sign in", "logout": "Sign out"
   },
   "common": {
     "search": "Search", "cancel": "Cancel", "confirm": "Confirm", "close": "Close",

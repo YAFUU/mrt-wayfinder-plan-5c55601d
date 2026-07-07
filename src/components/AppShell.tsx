@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import {
   Home, Search, Map, Ticket, Timer, Repeat, Users, HelpCircle,
   Accessibility as A11y, Database, Settings2, Languages, Wallet,
-  BookOpen, LogIn, LogOut,
+  BookOpen, LogIn, LogOut, Shield,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { MrtBrandLogo } from "./MrtBrandLogo";
@@ -33,6 +33,7 @@ const NAV: NavItem[] = [
 const BOTTOM: NavItem[] = [
   { to: "/accessibility", icon: A11y, key: "nav.accessibility" },
   { to: "/data-sources", icon: Database, key: "nav.dataSources" },
+  { to: "/policy", icon: Shield, key: "nav.policy" },
   { to: "/admin-demo", icon: Settings2, key: "nav.adminDemo" },
 ];
 
