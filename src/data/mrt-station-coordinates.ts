@@ -14,17 +14,19 @@ export type MrtStationCoordinate = {
 };
 
 const source = "MRT QuickPass curated station dataset; Google Maps cross-check";
+const manualCalibrationSource = "Google Maps manual calibration";
 const p = (
   line: SupportedMapLineId,
   latitude: number,
   longitude: number,
   coordinateConfidence: MrtStationCoordinate["coordinateConfidence"] = "unverified",
+  coordinateSource: string = source,
 ): MrtStationCoordinate => ({
   id: "",
   line,
   latitude,
   longitude,
-  coordinateSource: source,
+  coordinateSource,
   coordinateConfidence,
 });
 
@@ -147,16 +149,16 @@ export const MRT_MAP_LINE_SEQUENCES = {
 } satisfies Record<SupportedMapLineId, string[]>;
 
 const rawCoordinates = {
-  BL01: p("blue", 13.7115, 100.3961),
-  BL02: p("blue", 13.7175, 100.4066),
-  BL03: p("blue", 13.7215, 100.4149),
-  BL04: p("blue", 13.7245, 100.4225),
-  BL05: p("blue", 13.7205, 100.4416),
-  BL06: p("blue", 13.7213, 100.4515),
-  BL07: p("blue", 13.7226, 100.4756),
-  BL08: p("blue", 13.7332, 100.4757),
-  BL09: p("blue", 13.7423, 100.4735),
-  BL10: p("blue", 13.7591, 100.4712),
+  BL01: p("blue", 13.71095, 100.410025, "verified", manualCalibrationSource),
+  BL02: p("blue", 13.711932, 100.422397, "verified", manualCalibrationSource),
+  BL03: p("blue", 13.712872, 100.434177, "verified", manualCalibrationSource),
+  BL04: p("blue", 13.715516, 100.445615, "verified", manualCalibrationSource),
+  BL05: p("blue", 13.720373, 100.457181, "verified", manualCalibrationSource),
+  BL06: p("blue", 13.724608, 100.465215, "verified", manualCalibrationSource),
+  BL07: p("blue", 13.729648, 100.474163, "verified", manualCalibrationSource),
+  BL08: p("blue", 13.739605, 100.47077, "verified", manualCalibrationSource),
+  BL09: p("blue", 13.755075, 100.469229, "verified", manualCalibrationSource),
+  BL10: p("blue", 13.763189, 100.473206, "verified", manualCalibrationSource),
   BL11: p("blue", 13.7735, 100.4818),
   BL12: p("blue", 13.7796, 100.4931),
   BL13: p("blue", 13.7913, 100.5069),
