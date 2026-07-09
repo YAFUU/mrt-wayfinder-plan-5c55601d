@@ -7,12 +7,15 @@ import { InteractiveMrtMap } from "@/components/InteractiveMrtMap";
 import { PageHeader } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  geometryPathForLine,
+  geometryPathForRouteStationIds,
+  validateMrtLineGeometry,
+} from "@/data/mrt-line-geometry";
 import { LINES, STATIONS } from "@/data/network";
 import {
   type SupportedMapLineId,
   isSupportedMapLineId,
-  pathForLine,
-  pathForRouteStationIds,
   stationCoordinatesById,
   stationPointById,
 } from "@/data/mrt-station-coordinates";
@@ -78,6 +81,12 @@ function GoogleMapOrFallback({
   const [forceFallback, setForceFallback] = useState(false);
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
   const mapId = import.meta.env.VITE_GOOGLE_MAP_ID as string | undefined;
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const warnings = validateMrtLineGeometry();
+    if (warnings.length) console.warn("MRT map geometry warnings", warnings);
+  }, []);
 
   if (!apiKey || forceFallback || loadError) {
     return (
@@ -220,7 +229,7 @@ function GoogleMapContent({
       polylines.push(
         new googleApi.maps.Polyline({
           map,
-          path: pathForLine(lineId),
+          path: geometryPathForLine(lineId),
           strokeColor: line.color,
           strokeOpacity: routeActive && !inRoute ? 0.34 : 0.9,
           strokeWeight: 7,
@@ -233,7 +242,7 @@ function GoogleMapContent({
     routeResult?.segments.forEach((segment, index) => {
       if (!isSupportedMapLineId(segment.lineId)) return;
       const line = LINES.find((item) => item.id === segment.lineId);
-      const path = pathForRouteStationIds(segment.stations, segment.lineId);
+      const path = geometryPathForRouteStationIds(segment.stations, segment.lineId);
       if (!line || path.length < 2) return;
       polylines.push(
         new googleApi.maps.Polyline({
