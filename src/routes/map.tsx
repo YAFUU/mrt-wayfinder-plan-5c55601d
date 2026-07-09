@@ -28,7 +28,12 @@ declare global {
 
 export const Route = createFileRoute("/map")({ component: MapPage });
 
-const supportedLineIds = ["blue", "purple", "yellow", "pink"] as const satisfies readonly SupportedMapLineId[];
+const supportedLineIds = [
+  "blue",
+  "purple",
+  "yellow",
+  "pink",
+] as const satisfies readonly SupportedMapLineId[];
 const defaultCenter = { lat: 13.795, lng: 100.575 };
 let googleMapsPromise: Promise<void> | null = null;
 
@@ -144,7 +149,9 @@ function GoogleMapContent({
   });
 
   const origin = originId ? STATIONS.find((station) => station.id === originId) : null;
-  const destination = destinationId ? STATIONS.find((station) => station.id === destinationId) : null;
+  const destination = destinationId
+    ? STATIONS.find((station) => station.id === destinationId)
+    : null;
   const routeSet = useMemo(() => new Set(routeStations), [routeStations]);
   const routeLineIds = useMemo(() => {
     const ids = new Set<SupportedMapLineId>();
@@ -254,7 +261,10 @@ function GoogleMapContent({
         opacity: routeSet.size > 0 && !routeSet.has(station.id) ? 0.55 : 1,
         label: { text: station.code, color: "#0A2B57", fontSize: "10px", fontWeight: "700" },
         icon: markerIcon(line.color, originId === station.id, destinationId === station.id),
-        zIndex: routeSet.has(station.id) || originId === station.id || destinationId === station.id ? 80 : 40,
+        zIndex:
+          routeSet.has(station.id) || originId === station.id || destinationId === station.id
+            ? 80
+            : 40,
       });
       marker.addListener("click", () => setSelected(station));
       markers.push(marker);
@@ -274,7 +284,17 @@ function GoogleMapContent({
     }
 
     overlaysRef.current = { markers, polylines, infoWindows };
-  }, [ready, visibleLines, routeLineIds, routeResult, routeSet, originId, destinationId, origin, i18n.language]);
+  }, [
+    ready,
+    visibleLines,
+    routeLineIds,
+    routeResult,
+    routeSet,
+    originId,
+    destinationId,
+    origin,
+    i18n.language,
+  ]);
 
   const toggleLine = (lineId: SupportedMapLineId) =>
     setVisibleLines((current) => ({ ...current, [lineId]: !current[lineId] }));
@@ -288,25 +308,36 @@ function GoogleMapContent({
           {origin ? "เลือกปลายทาง" : "เลือกต้นทาง"}
         </p>
         <p className="mt-1 text-sm font-semibold">
-          {origin ? `คุณอยู่ที่นี่: ${origin.code} ${stationLabel(origin, i18n.language)}` : "กดสถานีบนแผนที่เพื่อเลือกต้นทาง"}
+          {origin
+            ? `คุณอยู่ที่นี่: ${origin.code} ${stationLabel(origin, i18n.language)}`
+            : "กดสถานีบนแผนที่เพื่อเลือกต้นทาง"}
         </p>
         {destination && (
           <p className="mt-1 text-xs text-muted-foreground">
             ปลายทาง: {destination.code} {stationLabel(destination, i18n.language)}
           </p>
         )}
-        <p className="mt-2 text-[11px] text-muted-foreground">Google Maps ใช้เป็นแผนที่พื้นหลังเท่านั้น การคำนวณเส้นทางยังใช้ MRT QuickPass</p>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          Google Maps ใช้เป็นแผนที่พื้นหลังเท่านั้น การคำนวณเส้นทางยังใช้ MRT QuickPass
+        </p>
       </Card>
 
       <Card className="absolute bottom-3 left-3 z-[420] w-[310px] max-w-[calc(100vw-1.5rem)] p-3 shadow-xl">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t("map.filters")}</p>
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          {t("map.filters")}
+        </p>
         <div className="grid gap-2">
           {supportedLineIds.map((lineId) => {
             const line = LINES.find((item) => item.id === lineId);
             if (!line) return null;
             return (
               <label key={lineId} className="flex min-h-8 items-center gap-2 text-xs">
-                <input type="checkbox" checked={visibleLines[lineId]} onChange={() => toggleLine(lineId)} className="size-4 accent-primary" />
+                <input
+                  type="checkbox"
+                  checked={visibleLines[lineId]}
+                  onChange={() => toggleLine(lineId)}
+                  className="size-4 accent-primary"
+                />
                 <span className="h-1.5 w-7 rounded-full" style={{ background: line.color }} />
                 <span className="truncate">{line.nameTh}</span>
               </label>
@@ -314,10 +345,27 @@ function GoogleMapContent({
           })}
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <Button size="sm" variant="outline" onClick={() => fitPoints(Object.keys(stationCoordinatesById).map(stationPointById))}>ดูทุกสาย</Button>
-          <Button size="sm" variant="outline" onClick={() => fitPoints(routeStations.map(stationPointById))} disabled={!routeResult}>ดูเส้นทาง</Button>
-          <Button size="sm" variant="outline" onClick={reset}>ล้างเส้นทาง</Button>
-          <Button size="sm" variant="outline" onClick={onUseFallback}>Local Map</Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => fitPoints(Object.keys(stationCoordinatesById).map(stationPointById))}
+          >
+            ดูทุกสาย
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => fitPoints(routeStations.map(stationPointById))}
+            disabled={!routeResult}
+          >
+            ดูเส้นทาง
+          </Button>
+          <Button size="sm" variant="outline" onClick={reset}>
+            ล้างเส้นทาง
+          </Button>
+          <Button size="sm" variant="outline" onClick={onUseFallback}>
+            Local Map
+          </Button>
         </div>
       </Card>
 
@@ -325,10 +373,16 @@ function GoogleMapContent({
         <Card className="absolute bottom-3 right-3 z-[430] w-[360px] max-w-[calc(100vw-1.5rem)] p-4 shadow-xl">
           <p className="text-xs text-muted-foreground">{selected.code}</p>
           <p className="text-lg font-bold">{stationLabel(selected, i18n.language)}</p>
-          <p className="mt-2 rounded-lg bg-muted p-3 text-xs text-muted-foreground">ข้อมูลสถานีสาธิต ใช้สำหรับเลือกต้นทาง/ปลายทางและดูเส้นทางใน Prototype</p>
+          <p className="mt-2 rounded-lg bg-muted p-3 text-xs text-muted-foreground">
+            ข้อมูลสถานีสาธิต ใช้สำหรับเลือกต้นทาง/ปลายทางและดูเส้นทางใน Prototype
+          </p>
           <div className="mt-3 grid grid-cols-2 gap-2">
-            <Button size="sm" variant="outline" onClick={() => setOrigin(selected.id)}>{t("map.setOrigin")}</Button>
-            <Button size="sm" onClick={() => setDestination(selected.id)}>{t("map.setDestination")}</Button>
+            <Button size="sm" variant="outline" onClick={() => setOrigin(selected.id)}>
+              {t("map.setOrigin")}
+            </Button>
+            <Button size="sm" onClick={() => setDestination(selected.id)}>
+              {t("map.setDestination")}
+            </Button>
           </div>
         </Card>
       )}
