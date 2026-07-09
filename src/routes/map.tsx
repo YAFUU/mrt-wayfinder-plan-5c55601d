@@ -16,7 +16,6 @@ import {
   stationCoordinatesById,
   stationPointById,
 } from "@/data/mrt-station-coordinates";
-import { stationLabel } from "@/lib/display";
 import { type RouteResult, planRoute } from "@/services/routeService";
 import { useTripStore } from "@/stores/tripStore";
 import type { MrtStation } from "@/types/mrt";
@@ -156,6 +155,15 @@ function GoogleMapContent({
     return ids;
   }, [routeStations]);
 
+  const fitPoints = (points: Array<{ lat: number; lng: number } | null>) => {
+    if (!mapRef.current || typeof google === "undefined" || !google.maps) return;
+    const valid = points.filter((point): point is { lat: number; lng: number } => Boolean(point));
+    if (!valid.length) return;
+    const bounds = new google.maps.LatLngBounds();
+    valid.forEach((point) => bounds.extend(point));
+    mapRef.current.fitBounds(bounds, 72);
+  };
+
   useEffect(() => {
     let cancelled = false;
     const previousAuthFailure = window.gm_authFailure;
@@ -268,15 +276,6 @@ function GoogleMapContent({
     overlaysRef.current = { markers, polylines, infoWindows };
   }, [ready, visibleLines, routeLineIds, routeResult, routeSet, originId, destinationId, origin, i18n.language]);
 
-  const fitPoints = (points: Array<{ lat: number; lng: number } | null>) => {
-    if (!mapRef.current || !google?.maps) return;
-    const valid = points.filter((point): point is { lat: number; lng: number } => Boolean(point));
-    if (!valid.length) return;
-    const bounds = new google.maps.LatLngBounds();
-    valid.forEach((point) => bounds.extend(point));
-    mapRef.current.fitBounds(bounds, 72);
-  };
-
   const toggleLine = (lineId: SupportedMapLineId) =>
     setVisibleLines((current) => ({ ...current, [lineId]: !current[lineId] }));
 
@@ -335,6 +334,10 @@ function GoogleMapContent({
       )}
     </div>
   );
+}
+
+function stationLabel(station: MrtStation, language: string) {
+  return language.startsWith("th") ? station.nameTh : station.nameEn;
 }
 
 function loadGoogleMaps(apiKey: string, language: string) {
