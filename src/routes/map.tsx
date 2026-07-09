@@ -157,6 +157,14 @@ function GoogleMapContent({
   }>({ markers: [], polylines: [], infoWindows: [] });
   const [ready, setReady] = useState(false);
   const [selected, setSelected] = useState<MrtStation | null>(null);
+  const [calibrationEnabled] = useState(
+    () => import.meta.env.DEV || isCalibrationRequestedFromUrl(),
+  );
+  const [calibrationStationId, setCalibrationStationId] = useState("BL19");
+  const [calibrationPoint, setCalibrationPoint] = useState<{ lat: number; lng: number } | null>(
+    null,
+  );
+  const [copiedCalibration, setCopiedCalibration] = useState<string | null>(null);
   const [visibleLines, setVisibleLines] = useState<Record<SupportedMapLineId, boolean>>({
     blue: true,
     purple: true,
@@ -180,6 +188,21 @@ function GoogleMapContent({
   }, [routeStations]);
   const selectedCoordinate = selected ? stationCoordinatesById[selected.id] : null;
   const isThaiLanguage = i18n.language.startsWith("th");
+  const calibrationStation = useMemo(
+    () => STATIONS.find((station) => station.id === calibrationStationId) ?? STATIONS[0],
+    [calibrationStationId],
+  );
+  const calibrationCoordinateText = calibrationPoint
+    ? `${calibrationPoint.lat.toFixed(6)}, ${calibrationPoint.lng.toFixed(6)}`
+    : "";
+  const calibrationTsObject =
+    calibrationPoint && calibrationStation
+      ? formatCalibrationTsObject(calibrationStation, calibrationPoint)
+      : "";
+  const calibrationJsonPatch =
+    calibrationPoint && calibrationStation
+      ? formatCalibrationJsonPatch(calibrationStation, calibrationPoint)
+      : "";
 
   const fitPoints = (points: Array<{ lat: number; lng: number } | null>) => {
     if (!mapRef.current || typeof google === "undefined" || !google.maps) return;
@@ -221,6 +244,19 @@ function GoogleMapContent({
       clearOverlays(overlaysRef.current);
     };
   }, [apiKey, language, mapId, onLoadError]);
+
+  useEffect(() => {
+    if (!ready || !mapRef.current || !calibrationEnabled) return;
+    const listener = mapRef.current.addListener("click", (event: google.maps.MapMouseEvent) => {
+      if (!event.latLng) return;
+      setCalibrationPoint({
+        lat: Number(event.latLng.lat().toFixed(6)),
+        lng: Number(event.latLng.lng().toFixed(6)),
+      });
+      setCopiedCalibration(null);
+    });
+    return () => listener.remove();
+  }, [ready, calibrationEnabled]);
 
   useEffect(() => {
     if (!ready || !mapRef.current) return;
@@ -316,6 +352,19 @@ function GoogleMapContent({
       }
     }
 
+    if (calibrationEnabled && calibrationPoint) {
+      markers.push(
+        new googleApi.maps.Marker({
+          map,
+          position: calibrationPoint,
+          title: "Calibration click point",
+          label: { text: "CAL", color: "#DC2626", fontSize: "10px", fontWeight: "800" },
+          icon: markerIcon("#DC2626", false, true),
+          zIndex: 120,
+        }),
+      );
+    }
+
     overlaysRef.current = { markers, polylines, infoWindows };
   }, [
     ready,
@@ -327,11 +376,19 @@ function GoogleMapContent({
     originId,
     destinationId,
     origin,
+    calibrationEnabled,
+    calibrationPoint,
     i18n.language,
   ]);
 
   const toggleLine = (lineId: SupportedMapLineId) =>
     setVisibleLines((current) => ({ ...current, [lineId]: !current[lineId] }));
+
+  const copyCalibrationText = async (label: string, value: string) => {
+    if (!value || typeof navigator === "undefined" || !navigator.clipboard) return;
+    await navigator.clipboard.writeText(value);
+    setCopiedCalibration(label);
+  };
 
   return (
     <div className="relative h-[calc(100dvh-8.5rem)] w-full overflow-hidden bg-[#eef3f8] lg:h-[calc(100dvh-6rem)]">
@@ -434,6 +491,75 @@ function GoogleMapContent({
         </div>
       </Card>
 
+      {calibrationEnabled && (
+        <Card className="absolute right-3 top-3 z-[440] w-[380px] max-w-[calc(100vw-1.5rem)] border-primary/40 p-4 shadow-xl">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Map Coordinate Calibration
+          </p>
+          <p className="mt-1 text-sm font-semibold">Click Google Maps to capture lat/lng</p>
+          <label className="mt-3 block text-xs font-semibold text-muted-foreground">
+            Station ID
+            <select
+              value={calibrationStationId}
+              onChange={(event) => {
+                setCalibrationStationId(event.target.value);
+                setCopiedCalibration(null);
+              }}
+              className="mt-1 h-10 w-full rounded-md border bg-background px-3 text-sm text-foreground"
+            >
+              {STATIONS.filter((station) => isSupportedMapLineId(station.lineId)).map((station) => (
+                <option key={station.id} value={station.id}>
+                  {station.code} {station.nameEn}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="mt-3 rounded-lg bg-muted p-3 text-xs">
+            <p className="font-semibold">
+              {calibrationStation?.code} {calibrationStation?.nameEn}
+            </p>
+            <p className="mt-1 text-muted-foreground">
+              {calibrationPoint
+                ? `lat ${calibrationPoint.lat.toFixed(6)}, lng ${calibrationPoint.lng.toFixed(6)}`
+                : "No point selected yet"}
+            </p>
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={!calibrationCoordinateText}
+              onClick={() => copyCalibrationText("coordinate", calibrationCoordinateText)}
+            >
+              Copy coordinate
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={!calibrationTsObject}
+              onClick={() => copyCalibrationText("TS object", calibrationTsObject)}
+            >
+              Copy TS object
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={!calibrationJsonPatch}
+              onClick={() => copyCalibrationText("JSON patch", calibrationJsonPatch)}
+            >
+              Copy JSON patch
+            </Button>
+          </div>
+          {copiedCalibration && (
+            <p className="mt-2 text-xs font-medium text-primary">Copied {copiedCalibration}</p>
+          )}
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            Output uses stationId as the key and marks the coordinate as Google Maps manual
+            calibration.
+          </p>
+        </Card>
+      )}
+
       {selected && (
         <Card className="absolute bottom-3 right-3 z-[430] w-[360px] max-w-[calc(100vw-1.5rem)] p-4 shadow-xl">
           <p className="text-xs text-muted-foreground">{selected.code}</p>
@@ -468,6 +594,41 @@ function GoogleMapContent({
 
 function stationLabel(station: MrtStation, language: string) {
   return language.startsWith("th") ? station.nameTh : station.nameEn;
+}
+
+function isCalibrationRequestedFromUrl() {
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).get("calibrate") === "1";
+}
+
+function formatCalibrationTsObject(station: MrtStation, point: { lat: number; lng: number }) {
+  return `${station.id}: {
+  id: "${station.id}",
+  nameTh: "${station.nameTh}",
+  nameEn: "${station.nameEn}",
+  latitude: ${point.lat.toFixed(6)},
+  longitude: ${point.lng.toFixed(6)},
+  coordinateConfidence: "verified",
+  coordinateSource: "Google Maps manual calibration"
+}`;
+}
+
+function formatCalibrationJsonPatch(station: MrtStation, point: { lat: number; lng: number }) {
+  return JSON.stringify(
+    {
+      [station.id]: {
+        id: station.id,
+        nameTh: station.nameTh,
+        nameEn: station.nameEn,
+        latitude: Number(point.lat.toFixed(6)),
+        longitude: Number(point.lng.toFixed(6)),
+        coordinateConfidence: "verified",
+        coordinateSource: "Google Maps manual calibration",
+      },
+    },
+    null,
+    2,
+  );
 }
 
 function loadGoogleMaps(apiKey: string, language: string) {
