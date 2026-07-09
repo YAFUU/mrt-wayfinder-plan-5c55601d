@@ -10,7 +10,7 @@ export type MrtStationCoordinate = {
   latitude: number;
   longitude: number;
   coordinateSource: string;
-  coordinateConfidence: "verified";
+  coordinateConfidence: "verified" | "unverified";
 };
 
 const source = "MRT QuickPass curated station dataset; Google Maps cross-check";
@@ -18,13 +18,14 @@ const p = (
   line: SupportedMapLineId,
   latitude: number,
   longitude: number,
+  coordinateConfidence: MrtStationCoordinate["coordinateConfidence"] = "unverified",
 ): MrtStationCoordinate => ({
   id: "",
   line,
   latitude,
   longitude,
   coordinateSource: source,
-  coordinateConfidence: "verified",
+  coordinateConfidence,
 });
 
 export const MRT_MAP_LINE_SEQUENCES = {
@@ -164,16 +165,16 @@ const rawCoordinates = {
   BL16: p("blue", 13.8062, 100.5391),
   BL17: p("blue", 13.8025, 100.5395),
   BL18: p("blue", 13.8018, 100.5522),
-  BL19: p("blue", 13.8017, 100.5537),
+  BL19: p("blue", 13.8017, 100.5537, "verified"),
   BL20: p("blue", 13.8137, 100.5602),
   BL21: p("blue", 13.8065, 100.5741),
   BL22: p("blue", 13.7969, 100.5738),
   BL23: p("blue", 13.7891, 100.5735),
   BL24: p("blue", 13.7772, 100.5738),
-  BL25: p("blue", 13.7669, 100.5695),
+  BL25: p("blue", 13.7669, 100.5695, "verified"),
   BL26: p("blue", 13.7574, 100.5645),
   BL27: p("blue", 13.7482, 100.5645),
-  BL28: p("blue", 13.7378, 100.5613),
+  BL28: p("blue", 13.7378, 100.5613, "verified"),
   BL29: p("blue", 13.7229, 100.5601),
   BL30: p("blue", 13.7213, 100.5535),
   BL31: p("blue", 13.7268, 100.546),
@@ -194,7 +195,7 @@ const rawCoordinates = {
   PP08: p("purple", 13.8735, 100.4818),
   PP09: p("purple", 13.8615, 100.4877),
   PP10: p("purple", 13.8578, 100.5011),
-  PP11: p("purple", 13.8611, 100.5136),
+  PP11: p("purple", 13.8611, 100.5136, "verified"),
   PP12: p("purple", 13.8571, 100.5225),
   PP13: p("purple", 13.8479, 100.53),
   PP14: p("purple", 13.8248, 100.5309),
@@ -222,7 +223,7 @@ const rawCoordinates = {
   YL20: p("yellow", 13.6432, 100.6487),
   YL21: p("yellow", 13.6321, 100.6493),
   YL22: p("yellow", 13.6212, 100.6496),
-  YL23: p("yellow", 13.6102, 100.6498),
+  YL23: p("yellow", 13.6102, 100.6498, "verified"),
   PK01: p("pink", 13.8611, 100.5136),
   PK02: p("pink", 13.8562, 100.5211),
   PK03: p("pink", 13.8598, 100.5311),
@@ -251,7 +252,7 @@ const rawCoordinates = {
   PK26: p("pink", 13.8181, 100.7061),
   PK27: p("pink", 13.8112, 100.7132),
   PK28: p("pink", 13.8071, 100.7211),
-  PK29: p("pink", 13.8091, 100.7292),
+  PK29: p("pink", 13.8091, 100.7292, "verified"),
   PK30: p("pink", 13.7451, 100.6301),
 } satisfies Record<string, MrtStationCoordinate>;
 

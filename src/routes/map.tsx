@@ -178,6 +178,8 @@ function GoogleMapContent({
     }
     return ids;
   }, [routeStations]);
+  const selectedCoordinate = selected ? stationCoordinatesById[selected.id] : null;
+  const isThaiLanguage = i18n.language.startsWith("th");
 
   const fitPoints = (points: Array<{ lat: number; lng: number } | null>) => {
     if (!mapRef.current || typeof google === "undefined" || !google.maps) return;
@@ -244,8 +246,11 @@ function GoogleMapContent({
               ? routeActive && !inRoute
                 ? 0.28
                 : 0.72
-              : 0.2,
+              : 0,
             strokeWeight: MRT_LINE_GEOMETRY_IS_VERIFIED ? 5 : 2,
+            icons: MRT_LINE_GEOMETRY_IS_VERIFIED
+              ? undefined
+              : prototypeLineIcons(googleApi, line.color, 0.32, 2),
             zIndex: routeActive && inRoute ? 20 : 10,
             geodesic: false,
           }),
@@ -253,23 +258,28 @@ function GoogleMapContent({
       }
     }
 
-    routeResult?.segments.forEach((segment, index) => {
-      if (!isSupportedMapLineId(segment.lineId)) return;
-      const line = LINES.find((item) => item.id === segment.lineId);
-      const path = geometryPathForRouteStationIds(segment.stations, segment.lineId);
-      if (!line || path.length < 2) return;
-      polylines.push(
-        new googleApi.maps.Polyline({
-          map,
-          path,
-          strokeColor: line.color,
-          strokeOpacity: MRT_LINE_GEOMETRY_IS_VERIFIED ? 0.95 : 0.64,
-          strokeWeight: MRT_LINE_GEOMETRY_IS_VERIFIED ? 10 : 4,
-          zIndex: 90 + index,
-          geodesic: false,
-        }),
-      );
-    });
+    if (showSimulatedLines || MRT_LINE_GEOMETRY_IS_VERIFIED) {
+      routeResult?.segments.forEach((segment, index) => {
+        if (!isSupportedMapLineId(segment.lineId)) return;
+        const line = LINES.find((item) => item.id === segment.lineId);
+        const path = geometryPathForRouteStationIds(segment.stations, segment.lineId);
+        if (!line || path.length < 2) return;
+        polylines.push(
+          new googleApi.maps.Polyline({
+            map,
+            path,
+            strokeColor: line.color,
+            strokeOpacity: MRT_LINE_GEOMETRY_IS_VERIFIED ? 0.95 : 0,
+            strokeWeight: MRT_LINE_GEOMETRY_IS_VERIFIED ? 10 : 3,
+            icons: MRT_LINE_GEOMETRY_IS_VERIFIED
+              ? undefined
+              : prototypeLineIcons(googleApi, line.color, 0.72, 3),
+            zIndex: 90 + index,
+            geodesic: false,
+          }),
+        );
+      });
+    }
 
     for (const station of STATIONS) {
       if (!isSupportedMapLineId(station.lineId)) continue;
@@ -346,11 +356,17 @@ function GoogleMapContent({
         </p>
       </Card>
 
-      {!MRT_LINE_GEOMETRY_IS_VERIFIED && (showSimulatedLines || routeResult) && (
+      {!MRT_LINE_GEOMETRY_IS_VERIFIED && showSimulatedLines && (
         <Card className="absolute left-3 top-[8.5rem] z-[420] w-[340px] max-w-[calc(100vw-1.5rem)] border-warning/50 bg-warning/10 p-3 text-xs shadow-xl">
-          <p className="font-semibold">เส้นสีเป็นข้อมูลจำลองใน Prototype</p>
+          <p className="font-semibold">
+            {isThaiLanguage
+              ? "เส้นสีเป็นข้อมูลจำลองสำหรับ Prototype ไม่ใช่แนวรางจริง"
+              : "Prototype line overlay only, not exact rail alignment."}
+          </p>
           <p className="mt-1 text-muted-foreground">
-            ใช้ Google Maps เป็นบริบทหลัก และใช้ marker สถานีเป็นตำแหน่งที่เชื่อถือได้
+            {isThaiLanguage
+              ? "ใช้ Google Maps เป็นบริบทหลัก และใช้ marker สถานีเป็นตำแหน่งที่เชื่อถือได้"
+              : "Google Maps remains the accurate base map. Station markers are the trusted layer."}
           </p>
         </Card>
       )}
@@ -358,6 +374,9 @@ function GoogleMapContent({
       <Card className="absolute bottom-3 left-3 z-[420] w-[310px] max-w-[calc(100vw-1.5rem)] p-3 shadow-xl">
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           {t("map.filters")}
+        </p>
+        <p className="mb-2 text-[11px] font-medium text-muted-foreground">
+          {isThaiLanguage ? "Google Maps Accurate Marker Mode" : "Google Maps Accurate Marker Mode"}
         </p>
         <div className="grid gap-2">
           {!MRT_LINE_GEOMETRY_IS_VERIFIED && (
@@ -368,7 +387,9 @@ function GoogleMapContent({
                 onChange={() => setShowSimulatedLines((current) => !current)}
                 className="size-4 accent-primary"
               />
-              <span className="font-medium">แสดงเส้นจำลอง</span>
+              <span className="font-medium">
+                {isThaiLanguage ? "แสดงเส้นจำลอง" : "Show prototype lines"}
+              </span>
             </label>
           )}
           {supportedLineIds.map((lineId) => {
@@ -420,6 +441,17 @@ function GoogleMapContent({
           <p className="mt-2 rounded-lg bg-muted p-3 text-xs text-muted-foreground">
             ข้อมูลสถานีสาธิต ใช้สำหรับเลือกต้นทาง/ปลายทางและดูเส้นทางใน Prototype
           </p>
+          {selectedCoordinate && (
+            <div className="mt-2 rounded-lg border bg-background p-3 text-xs text-muted-foreground">
+              <p>
+                {isThaiLanguage ? "ความมั่นใจพิกัด" : "Coordinate confidence"}:{" "}
+                <span className="font-semibold text-foreground">
+                  {selectedCoordinate.coordinateConfidence}
+                </span>
+              </p>
+              <p className="mt-1">{selectedCoordinate.coordinateSource}</p>
+            </div>
+          )}
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Button size="sm" variant="outline" onClick={() => setOrigin(selected.id)}>
               {t("map.setOrigin")}
@@ -473,6 +505,27 @@ function markerIcon(color: string, origin: boolean, destination: boolean) {
   const size = origin || destination ? 30 : 18;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 3}" fill="white" stroke="${border}" stroke-width="4"/>${origin || destination ? `<circle cx="${size / 2}" cy="${size / 2}" r="5" fill="${border}"/>` : ""}</svg>`;
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function prototypeLineIcons(
+  googleApi: typeof google,
+  color: string,
+  opacity: number,
+  scale: number,
+): google.maps.IconSequence[] {
+  return [
+    {
+      icon: {
+        path: "M 0,-1 0,1",
+        strokeColor: color,
+        strokeOpacity: opacity,
+        strokeWeight: 2,
+        scale,
+      },
+      offset: "0",
+      repeat: "16px",
+    },
+  ];
 }
 
 function escapeHtml(value: string) {
