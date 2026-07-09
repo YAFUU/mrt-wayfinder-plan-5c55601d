@@ -10,14 +10,11 @@ export type LineGeometrySegment = {
   fromStationId: string;
   toStationId: string;
   points: LatLngPoint[];
+  verification: "demo";
 };
 
-const curveStrengthByLine: Record<SupportedMapLineId, number> = {
-  blue: 0.11,
-  purple: 0.08,
-  yellow: 0.07,
-  pink: 0.08,
-};
+export const MRT_LINE_GEOMETRY_SOURCE = "src/data/mrt-line-geometry.ts demo station-id geometry";
+export const MRT_LINE_GEOMETRY_IS_VERIFIED = false;
 
 export const MRT_LINE_GEOMETRY_SEGMENTS = Object.fromEntries(
   Object.entries(MRT_MAP_LINE_SEQUENCES).map(([lineId, stationIds]) => [
@@ -101,7 +98,7 @@ function createGeometrySegment(
   lineId: SupportedMapLineId,
   fromStationId: string,
   toStationId: string,
-  index: number,
+  _index: number,
 ): LineGeometrySegment | null {
   const start = stationPointById(fromStationId);
   const end = stationPointById(toStationId);
@@ -110,7 +107,8 @@ function createGeometrySegment(
     lineId,
     fromStationId,
     toStationId,
-    points: quadraticPoints(start, controlPointForSegment(start, end, lineId, index), end),
+    points: interpolatePoints(start, end),
+    verification: "demo",
   };
 }
 
@@ -155,48 +153,9 @@ function pathForStationIds(stationIds: string[]): LatLngPoint[] {
   return stationIds.map(stationPointById).filter((point): point is LatLngPoint => Boolean(point));
 }
 
-function controlPointForSegment(
-  start: LatLngPoint,
-  end: LatLngPoint,
-  lineId: SupportedMapLineId,
-  index: number,
-): LatLngPoint {
-  const latDelta = end.lat - start.lat;
-  const lngDelta = end.lng - start.lng;
-  const length = Math.hypot(latDelta, lngDelta) || 1;
-  const normal = { lat: -lngDelta / length, lng: latDelta / length };
-  const curveSign = curveDirection(lineId, index);
-  const distance = Math.min(length * curveStrengthByLine[lineId], 0.0028);
-
-  return {
-    lat: (start.lat + end.lat) / 2 + normal.lat * distance * curveSign,
-    lng: (start.lng + end.lng) / 2 + normal.lng * distance * curveSign,
-  };
-}
-
-function curveDirection(lineId: SupportedMapLineId, index: number) {
-  if (lineId === "blue") {
-    if (index < 6) return -1;
-    if (index < 18) return 1;
-    if (index < 28) return -1;
-    return 1;
-  }
-  if (lineId === "purple") return index < 10 ? 1 : -1;
-  if (lineId === "yellow") return index < 8 ? -1 : 1;
-  return index < 8 ? 1 : -1;
-}
-
-function quadraticPoints(
-  start: LatLngPoint,
-  control: LatLngPoint,
-  end: LatLngPoint,
-): LatLngPoint[] {
-  return [0, 0.25, 0.5, 0.75, 1].map((t) => ({
-    lat: quadratic(start.lat, control.lat, end.lat, t),
-    lng: quadratic(start.lng, control.lng, end.lng, t),
+function interpolatePoints(start: LatLngPoint, end: LatLngPoint): LatLngPoint[] {
+  return [0, 0.2, 0.4, 0.6, 0.8, 1].map((t) => ({
+    lat: start.lat + (end.lat - start.lat) * t,
+    lng: start.lng + (end.lng - start.lng) * t,
   }));
-}
-
-function quadratic(start: number, control: number, end: number, t: number) {
-  return (1 - t) ** 2 * start + 2 * (1 - t) * t * control + t ** 2 * end;
 }

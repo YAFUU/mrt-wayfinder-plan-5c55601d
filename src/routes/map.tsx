@@ -8,6 +8,8 @@ import { PageHeader } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
+  MRT_LINE_GEOMETRY_IS_VERIFIED,
+  MRT_LINE_GEOMETRY_SOURCE,
   geometryPathForLine,
   geometryPathForRouteStationIds,
   validateMrtLineGeometry,
@@ -85,6 +87,11 @@ function GoogleMapOrFallback({
   useEffect(() => {
     if (!import.meta.env.DEV) return;
     const warnings = validateMrtLineGeometry();
+    console.info("MRT /map geometry source", {
+      source: MRT_LINE_GEOMETRY_SOURCE,
+      verified: MRT_LINE_GEOMETRY_IS_VERIFIED,
+      mainLineOverlayDefault: MRT_LINE_GEOMETRY_IS_VERIFIED ? "visible" : "hidden",
+    });
     if (warnings.length) console.warn("MRT map geometry warnings", warnings);
   }, []);
 
@@ -156,6 +163,7 @@ function GoogleMapContent({
     yellow: true,
     pink: true,
   });
+  const [showSimulatedLines, setShowSimulatedLines] = useState(MRT_LINE_GEOMETRY_IS_VERIFIED);
 
   const origin = originId ? STATIONS.find((station) => station.id === originId) : null;
   const destination = destinationId
@@ -221,22 +229,28 @@ function GoogleMapContent({
     const polylines: google.maps.Polyline[] = [];
     const infoWindows: google.maps.InfoWindow[] = [];
 
-    for (const lineId of supportedLineIds) {
-      const line = LINES.find((item) => item.id === lineId);
-      if (!line || !visibleLines[lineId]) continue;
-      const routeActive = routeLineIds.size > 0;
-      const inRoute = routeLineIds.has(lineId);
-      polylines.push(
-        new googleApi.maps.Polyline({
-          map,
-          path: geometryPathForLine(lineId),
-          strokeColor: line.color,
-          strokeOpacity: routeActive && !inRoute ? 0.34 : 0.9,
-          strokeWeight: 7,
-          zIndex: routeActive && inRoute ? 20 : 10,
-          geodesic: false,
-        }),
-      );
+    if (showSimulatedLines || MRT_LINE_GEOMETRY_IS_VERIFIED) {
+      for (const lineId of supportedLineIds) {
+        const line = LINES.find((item) => item.id === lineId);
+        if (!line || !visibleLines[lineId]) continue;
+        const routeActive = routeLineIds.size > 0;
+        const inRoute = routeLineIds.has(lineId);
+        polylines.push(
+          new googleApi.maps.Polyline({
+            map,
+            path: geometryPathForLine(lineId),
+            strokeColor: line.color,
+            strokeOpacity: MRT_LINE_GEOMETRY_IS_VERIFIED
+              ? routeActive && !inRoute
+                ? 0.28
+                : 0.72
+              : 0.2,
+            strokeWeight: MRT_LINE_GEOMETRY_IS_VERIFIED ? 5 : 2,
+            zIndex: routeActive && inRoute ? 20 : 10,
+            geodesic: false,
+          }),
+        );
+      }
     }
 
     routeResult?.segments.forEach((segment, index) => {
@@ -249,8 +263,8 @@ function GoogleMapContent({
           map,
           path,
           strokeColor: line.color,
-          strokeOpacity: 1,
-          strokeWeight: 14,
+          strokeOpacity: MRT_LINE_GEOMETRY_IS_VERIFIED ? 0.95 : 0.64,
+          strokeWeight: MRT_LINE_GEOMETRY_IS_VERIFIED ? 10 : 4,
           zIndex: 90 + index,
           geodesic: false,
         }),
@@ -299,6 +313,7 @@ function GoogleMapContent({
     routeLineIds,
     routeResult,
     routeSet,
+    showSimulatedLines,
     originId,
     destinationId,
     origin,
@@ -331,11 +346,31 @@ function GoogleMapContent({
         </p>
       </Card>
 
+      {!MRT_LINE_GEOMETRY_IS_VERIFIED && (showSimulatedLines || routeResult) && (
+        <Card className="absolute left-3 top-[8.5rem] z-[420] w-[340px] max-w-[calc(100vw-1.5rem)] border-warning/50 bg-warning/10 p-3 text-xs shadow-xl">
+          <p className="font-semibold">เส้นสีเป็นข้อมูลจำลองใน Prototype</p>
+          <p className="mt-1 text-muted-foreground">
+            ใช้ Google Maps เป็นบริบทหลัก และใช้ marker สถานีเป็นตำแหน่งที่เชื่อถือได้
+          </p>
+        </Card>
+      )}
+
       <Card className="absolute bottom-3 left-3 z-[420] w-[310px] max-w-[calc(100vw-1.5rem)] p-3 shadow-xl">
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           {t("map.filters")}
         </p>
         <div className="grid gap-2">
+          {!MRT_LINE_GEOMETRY_IS_VERIFIED && (
+            <label className="mb-1 flex min-h-8 items-center gap-2 rounded-md bg-muted px-2 text-xs">
+              <input
+                type="checkbox"
+                checked={showSimulatedLines}
+                onChange={() => setShowSimulatedLines((current) => !current)}
+                className="size-4 accent-primary"
+              />
+              <span className="font-medium">แสดงเส้นจำลอง</span>
+            </label>
+          )}
           {supportedLineIds.map((lineId) => {
             const line = LINES.find((item) => item.id === lineId);
             if (!line) return null;
