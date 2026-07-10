@@ -235,6 +235,19 @@ export const storage = {
     save();
     return { ok: true };
   },
+  accountExists(email: string): boolean {
+    const norm = email.trim().toLowerCase();
+    return state().accounts.some((a) => a.email === norm);
+  },
+  resetPassword(email: string, newPassword: string): { ok: boolean; error?: string } {
+    const s = state();
+    const norm = email.trim().toLowerCase();
+    const acc = s.accounts.find((a) => a.email === norm);
+    if (!acc) return { ok: false, error: "ไม่พบบัญชีนี้ในระบบ" };
+    acc.passwordHash = hashPw(newPassword);
+    save();
+    return { ok: true };
+  },
   logout() {
     const s = state();
     s.profile = {
@@ -245,15 +258,6 @@ export const storage = {
       displayName: "ผู้เยี่ยมชม",
     };
     save();
-  },
-  resetPassword(email: string, newPassword: string): { ok: boolean; error?: string } {
-    const s = state();
-    const norm = email.trim().toLowerCase();
-    const acc = s.accounts.find((a) => a.email === norm);
-    if (!acc) return { ok: false, error: "ไม่พบบัญชีนี้ในระบบ" };
-    acc.passwordHash = hashPw(newPassword);
-    save();
-    return { ok: true };
   },
 
   reset() {

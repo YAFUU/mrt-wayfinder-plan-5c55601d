@@ -28,7 +28,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as TicketTicketIdRouteImport } from './routes/ticket.$ticketId'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
-import { Route as AuthForgotRouteImport } from './routes/auth.forgot'
+import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-password'
 
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
@@ -125,9 +125,9 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthForgotRoute = AuthForgotRouteImport.update({
-  id: '/auth/forgot',
-  path: '/auth/forgot',
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/auth/forgot-password',
+  path: '/auth/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -148,7 +148,7 @@ export interface FileRoutesByFullPath {
   '/tickets': typeof TicketsRoute
   '/trips': typeof TripsRoute
   '/wallet': typeof WalletRoute
-  '/auth/forgot': typeof AuthForgotRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
@@ -170,7 +170,7 @@ export interface FileRoutesByTo {
   '/tickets': typeof TicketsRoute
   '/trips': typeof TripsRoute
   '/wallet': typeof WalletRoute
-  '/auth/forgot': typeof AuthForgotRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
@@ -193,7 +193,7 @@ export interface FileRoutesById {
   '/tickets': typeof TicketsRoute
   '/trips': typeof TripsRoute
   '/wallet': typeof WalletRoute
-  '/auth/forgot': typeof AuthForgotRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/ticket/$ticketId': typeof TicketTicketIdRoute
@@ -217,7 +217,7 @@ export interface FileRouteTypes {
     | '/tickets'
     | '/trips'
     | '/wallet'
-    | '/auth/forgot'
+    | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
     | '/ticket/$ticketId'
@@ -239,7 +239,7 @@ export interface FileRouteTypes {
     | '/tickets'
     | '/trips'
     | '/wallet'
-    | '/auth/forgot'
+    | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
     | '/ticket/$ticketId'
@@ -261,7 +261,7 @@ export interface FileRouteTypes {
     | '/tickets'
     | '/trips'
     | '/wallet'
-    | '/auth/forgot'
+    | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
     | '/ticket/$ticketId'
@@ -284,7 +284,7 @@ export interface RootRouteChildren {
   TicketsRoute: typeof TicketsRoute
   TripsRoute: typeof TripsRoute
   WalletRoute: typeof WalletRoute
-  AuthForgotRoute: typeof AuthForgotRoute
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
   TicketTicketIdRoute: typeof TicketTicketIdRoute
@@ -425,11 +425,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/forgot': {
-      id: '/auth/forgot'
-      path: '/auth/forgot'
-      fullPath: '/auth/forgot'
-      preLoaderRoute: typeof AuthForgotRouteImport
+    '/auth/forgot-password': {
+      id: '/auth/forgot-password'
+      path: '/auth/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -452,7 +452,7 @@ const rootRouteChildren: RootRouteChildren = {
   TicketsRoute: TicketsRoute,
   TripsRoute: TripsRoute,
   WalletRoute: WalletRoute,
-  AuthForgotRoute: AuthForgotRoute,
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
   TicketTicketIdRoute: TicketTicketIdRoute,
@@ -460,3 +460,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

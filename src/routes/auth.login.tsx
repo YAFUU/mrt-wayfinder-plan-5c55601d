@@ -41,9 +41,12 @@ function LoginPage() {
             <Label htmlFor="pw">รหัสผ่าน</Label>
             <Input id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
           </div>
-          <div className="flex justify-end -mt-2">
-            <Link to="/auth/forgot" className="text-xs text-primary hover:underline font-medium">
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <Link to="/auth/forgot-password" className="font-medium text-primary hover:underline">
               ลืมรหัสผ่าน?
+            </Link>
+            <Link to="/policy" className="text-muted-foreground hover:text-primary hover:underline">
+              นโยบายความเป็นส่วนตัว
             </Link>
           </div>
           <Button type="submit" className="w-full h-11" disabled={busy}>
@@ -52,6 +55,9 @@ function LoginPage() {
         </form>
         <p className="text-sm text-muted-foreground mt-4 text-center">
           ยังไม่มีบัญชี? <Link to="/auth/register" className="text-primary font-medium hover:underline">สมัครสมาชิก</Link>
+        </p>
+        <p className="text-xs text-muted-foreground mt-2 text-center">
+          การใช้งานต่อถือว่าคุณรับทราบ <Link to="/policy" className="text-primary hover:underline">นโยบายและเงื่อนไข</Link>
         </p>
       </Card>
       <div className="mt-4"><DemoDisclaimer>บัญชีถูกเก็บบนอุปกรณ์นี้เพื่อการสาธิตเท่านั้น</DemoDisclaimer></div>

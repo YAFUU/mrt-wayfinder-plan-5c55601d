@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { nearestStations } from "@/services/routeService";
 import type { MrtStation } from "@/types/mrt";
 
@@ -21,14 +21,25 @@ export function useLiveLocation(autoStart = false): LiveLocationState {
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [error, setError] = useState<string | undefined>();
-  const [watchId, setWatchId] = useState<number | null>(null);
+  const watchIdRef = useRef<number | null>(null);
 
-  const start = () => {
+  const stop = useCallback(() => {
+    if (watchIdRef.current != null && typeof navigator !== "undefined" && navigator.geolocation) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+    }
+    watchIdRef.current = null;
+    setStatus("idle");
+  }, []);
+
+  const start = useCallback(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       setStatus("unsupported");
+      setError("เบราว์เซอร์นี้ไม่รองรับการระบุตำแหน่ง");
       return;
     }
+    if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current);
     setStatus("requesting");
+    setError(undefined);
     const id = navigator.geolocation.watchPosition(
       (pos) => {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
@@ -37,28 +48,30 @@ export function useLiveLocation(autoStart = false): LiveLocationState {
         setStatus("watching");
       },
       (err) => {
+        if (watchIdRef.current != null) {
+          navigator.geolocation.clearWatch(watchIdRef.current);
+          watchIdRef.current = null;
+        }
         setStatus(err.code === err.PERMISSION_DENIED ? "denied" : "error");
-        setError(err.message);
+        setError(
+          err.code === err.PERMISSION_DENIED
+            ? "ไม่สามารถเข้าถึงตำแหน่งได้ กรุณาอนุญาต Location ในเบราว์เซอร์"
+            : err.message,
+        );
       },
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
     );
-    setWatchId(id);
-  };
-
-  const stop = () => {
-    if (watchId != null && navigator.geolocation) navigator.geolocation.clearWatch(watchId);
-    setWatchId(null);
-  };
+    watchIdRef.current = id;
+  }, []);
 
   useEffect(() => {
     if (autoStart) start();
     return () => {
-      if (watchId != null && typeof navigator !== "undefined" && navigator.geolocation) {
-        navigator.geolocation.clearWatch(watchId);
+      if (watchIdRef.current != null && typeof navigator !== "undefined" && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [autoStart, start]);
 
   const nearest = coords ? nearestStations(coords, 1)[0] : null;
 

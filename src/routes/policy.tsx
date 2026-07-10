@@ -1,98 +1,91 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ShieldCheck, MapPin, Database, FileWarning, ScrollText, UserRound } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { PageHeader } from "@/components/common";
-import { Shield, Lock, Database, Cookie, UserCheck, Mail, AlertTriangle, MapPin } from "lucide-react";
+import { PageHeader, DemoDisclaimer } from "@/components/common";
 
-export const Route = createFileRoute("/policy")({
-  component: PolicyPage,
-  head: () => ({
-    meta: [
-      { title: "นโยบายความเป็นส่วนตัวและเงื่อนไขการใช้งาน · MRT QuickPass" },
-      { name: "description", content: "นโยบายความเป็นส่วนตัว การใช้ข้อมูล และเงื่อนไขการใช้งานของ MRT QuickPass" },
-      { name: "robots", content: "index,follow" },
-    ],
-  }),
-});
+export const Route = createFileRoute("/policy")({ component: PolicyPage });
 
-interface Section { icon: typeof Shield; title: string; body: string; }
-const SECTIONS: Section[] = [
+const sections = [
   {
-    icon: Database, title: "ข้อมูลที่เราเก็บ",
-    body: "MRT QuickPass เป็นต้นแบบ (prototype) เพื่อการสาธิตเท่านั้น ข้อมูลบัญชี กระเป๋าเงิน ประวัติการเดินทาง และตั๋วของคุณ ถูกจัดเก็บไว้ใน localStorage บนอุปกรณ์นี้เท่านั้น ไม่มีการส่งไปยังเซิร์ฟเวอร์ของเรา",
+    icon: Database,
+    title: "ข้อมูลที่จัดเก็บ",
+    body:
+      "MRT QuickPass เป็นโปรเจกต์ต้นแบบ ข้อมูลบัญชี ตั๋วทดลอง กระเป๋าเงินทดลอง และการตั้งค่าจะถูกจัดเก็บไว้ในเครื่องของผู้ใช้ผ่าน localStorage เท่านั้น",
   },
   {
-    icon: MapPin, title: "ตำแหน่งที่ตั้ง",
-    body: "เมื่อคุณอนุญาตให้ใช้ตำแหน่ง (Geolocation) เราจะใช้พิกัดของคุณเฉพาะภายในเบราว์เซอร์เพื่อคำนวณสถานี MRT ที่ใกล้ที่สุดเท่านั้น ข้อมูลจะไม่ถูกบันทึกหรือส่งออกไปที่ใด และคุณสามารถปิดการเข้าถึงได้ทุกเมื่อจากการตั้งค่าเบราว์เซอร์",
+    icon: MapPin,
+    title: "การใช้ตำแหน่งแบบ Real-time",
+    body:
+      "ตำแหน่งของคุณจะถูกใช้เพื่อประมาณสถานี MRT ที่อยู่ใกล้ที่สุดเท่านั้น ระบบจะเริ่มอ่านตำแหน่งเมื่อคุณกดยืนยันในหน้าต่างขอสิทธิ์ และขึ้นอยู่กับการอนุญาต Location ของเบราว์เซอร์",
   },
   {
-    icon: Cookie, title: "คุกกี้และการติดตาม",
-    body: "เราไม่ใช้คุกกี้เพื่อการโฆษณาหรือติดตามข้ามเว็บไซต์ มีการใช้ localStorage เพื่อจดจำภาษา ธีม และข้อมูลบัญชีเดโมของคุณเท่านั้น",
+    icon: UserRound,
+    title: "การจัดเก็บบัญชีในโหมดสาธิต",
+    body:
+      "บัญชีและรหัสผ่านในแอปนี้เป็นข้อมูลสาธิตที่เก็บในอุปกรณ์เดียวกัน ไม่ใช่ระบบบัญชีจริงของ MRTA/BEM และไม่ควรใช้รหัสผ่านจริงที่ใช้กับบริการอื่น",
   },
   {
-    icon: Lock, title: "ความปลอดภัย",
-    body: "เนื่องจากเป็นระบบสาธิต โปรดอย่ากรอกรหัสผ่านที่คุณใช้กับบริการอื่นจริง ๆ ระบบใช้การเข้ารหัสอย่างง่าย (hash) เพื่อการเรียนรู้เท่านั้น และไม่ควรถือว่าเป็นระดับการปกป้องข้อมูลจริง",
+    icon: FileWarning,
+    title: "ข้อจำกัดความรับผิดชอบของข้อมูลรถไฟฟ้า",
+    body:
+      "ข้อมูลสถานี เส้นทาง ค่าโดยสาร คิว และตำแหน่งอาจไม่ใช่ข้อมูลทางการหรือข้อมูล Real-time จริง ควรตรวจสอบข้อมูลจากผู้ให้บริการอย่างเป็นทางการก่อนใช้งานจริง",
   },
   {
-    icon: UserCheck, title: "สิทธิของผู้ใช้",
-    body: "คุณสามารถลบข้อมูลทั้งหมดของคุณได้ด้วยตนเองผ่านหน้าจัดการเดโม (Admin Demo) หรือโดยการล้าง localStorage ของเบราว์เซอร์",
-  },
-  {
-    icon: AlertTriangle, title: "ข้อจำกัดการใช้งาน",
-    body: "MRT QuickPass ไม่ใช่ผลิตภัณฑ์ทางการของ MRTA / BEM เส้นทาง ค่าโดยสาร เวลารอ และความหนาแน่นของสถานี ใช้เพื่อการสาธิตเท่านั้น อาจไม่ตรงกับข้อมูลจริง โปรดตรวจสอบข้อมูลอย่างเป็นทางการก่อนเดินทาง",
-  },
-  {
-    icon: Mail, title: "ติดต่อเรา",
-    body: "หากมีคำถามเกี่ยวกับความเป็นส่วนตัวหรือเงื่อนไขการใช้งานฉบับนี้ กรุณาติดต่อผู้จัดทำโครงการต้นแบบผ่านหน้าช่วยเหลือ",
+    icon: ScrollText,
+    title: "เงื่อนไขการใช้งาน",
+    body:
+      "แอปนี้มีไว้เพื่อสาธิตแนวคิดและการออกแบบประสบการณ์ผู้ใช้เท่านั้น ห้ามใช้ตั๋วหรือข้อมูลในระบบนี้แทนการเดินทางจริงหรือการชำระเงินจริง",
   },
 ];
 
-
-
-
 function PolicyPage() {
   return (
-    <div className="p-4 lg:p-8 max-w-3xl mx-auto space-y-6">
+    <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-5">
       <PageHeader
-        title="นโยบายและเงื่อนไข"
-        subtitle="ความเป็นส่วนตัว การใช้ข้อมูล และเงื่อนไขการใช้งาน MRT QuickPass"
+        title="นโยบายความเป็นส่วนตัว"
+        subtitle="ข้อมูลนี้อธิบายการจัดเก็บข้อมูล การใช้ตำแหน่ง และข้อจำกัดของ MRT QuickPass ในโหมดต้นแบบ"
+        action={
+          <Button asChild variant="outline">
+            <Link to="/">กลับหน้าแรก</Link>
+          </Button>
+        }
       />
 
-      <Card className="p-5 border-primary/30 bg-primary/5">
-        <div className="flex items-start gap-3">
-          <div className="size-10 rounded-full bg-primary text-primary-foreground grid place-items-center shrink-0">
-            <Shield className="size-5" />
+      <Card className="p-5 lg:p-6 border-primary/20 bg-primary/5">
+        <div className="flex gap-4">
+          <div className="grid size-12 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
+            <ShieldCheck className="size-6" />
           </div>
-          <div className="min-w-0">
-            <h2 className="font-semibold">โครงการต้นแบบเพื่อการสาธิต</h2>
-            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-              MRT QuickPass เป็น prototype ที่จัดทำเพื่อการเรียนรู้และสาธิตเท่านั้น
-              ไม่ได้เชื่อมต่อกับระบบจำหน่ายตั๋วหรือประตูจริงของ MRTA / BEM
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold">เว็บไซต์นี้เป็น Demo / Prototype</h2>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              MRT QuickPass ยังไม่เชื่อมต่อกับระบบประตู ระบบตั๋ว ระบบชำระเงิน หรือฐานข้อมูลทางการของ MRTA/BEM
+              ข้อมูลทั้งหมดมีไว้เพื่อทดสอบประสบการณ์การใช้งานและการออกแบบเท่านั้น
             </p>
           </div>
         </div>
       </Card>
 
-      <div className="grid gap-3">
-        {SECTIONS.map((s, i) => {
-          const Icon = s.icon;
-          return (
-            <Card key={i} className="p-4 flex gap-4 items-start transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40">
-              <div className="size-10 rounded-lg bg-muted text-foreground grid place-items-center shrink-0">
-                <Icon className="size-5" />
+      <div className="grid gap-4 md:grid-cols-2">
+        {sections.map((section) => (
+          <Card key={section.title} className="p-5">
+            <div className="flex gap-3">
+              <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-muted text-primary">
+                <section.icon className="size-5" />
               </div>
-              <div className="min-w-0">
-                <h3 className="font-semibold">{i + 1}. {s.title}</h3>
-                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{s.body}</p>
+              <div>
+                <h2 className="font-semibold">{section.title}</h2>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{section.body}</p>
               </div>
-            </Card>
-          );
-        })}
+            </div>
+          </Card>
+        ))}
       </div>
 
-      <p className="text-center text-xs text-muted-foreground pt-2">
-        ปรับปรุงล่าสุด: 7 กรกฎาคม 2569 ·{" "}
-        <Link to="/help" className="text-primary hover:underline">ต้องการความช่วยเหลือ?</Link>
-      </p>
+      <DemoDisclaimer tone="warn">
+        ข้อมูลการเดินทาง แผนที่ และสถานีในโปรเจกต์นี้เป็นข้อมูลต้นแบบ อาจไม่ครบถ้วนหรือไม่ตรงกับสถานการณ์จริงแบบ Real-time
+      </DemoDisclaimer>
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { PageHeader, DemoDisclaimer, EmptyState } from "@/components/common";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sun, Share2, LogIn, LogOut, HelpCircle, Receipt, Sparkles, Radio } from "lucide-react";
-import { useLiveLocation } from "@/hooks/useLiveLocation";
+import { useSharedLiveLocation } from "@/components/LocationProvider";
 import { getStation } from "@/services/routeService";
 import { generateQrToken, QR_ROTATE_MS } from "@/lib/qr";
 import { storage } from "@/services/storageService";
@@ -37,6 +37,7 @@ function TicketPage() {
   const [token, setToken] = useState(() => (ticket ? ticket.qrToken : ""));
   const profile = useProfile();
   const nav = useNavigate();
+  const live = useSharedLiveLocation();
 
   // Rotate QR token every 20s
   useEffect(() => {
@@ -87,7 +88,6 @@ function TicketPage() {
   const validUntil = new Date(ticket.validUntil);
   const isActive = ticket.status === "ready_to_enter" || ticket.status === "in_journey";
 
-  const live = useLiveLocation(false);
   const distTo = (s: { lat: number; lng: number }) => {
     if (!live.coords) return null;
     const R = 6371000, rad = (d: number) => (d * Math.PI) / 180;

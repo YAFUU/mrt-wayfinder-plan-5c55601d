@@ -1,7 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
 import { PageHeader, DemoDisclaimer } from "@/components/common";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,7 +37,17 @@ function QueuePage() {
   const [lineFilter, setLineFilter] = useState<LineId | "all">("all");
   const [statusFilter, setStatusFilter] = useState<QueueDemo["queueStatus"] | "all">("all");
 
-  useEffect(() => { const id = setInterval(tick, 15000); return () => clearInterval(id); }, [tick]);
+  useEffect(() => {
+    const runTick = () => {
+      try {
+        tick();
+      } catch (error) {
+        console.warn("Queue realtime demo update failed; keeping current queue state.", error);
+      }
+    };
+    const id = setInterval(runTick, 15000);
+    return () => clearInterval(id);
+  }, [tick]);
 
   const filtered = useMemo(() => {
     return items.filter((it) => {
@@ -38,7 +56,8 @@ function QueuePage() {
       if (lineFilter !== "all" && s.lineId !== lineFilter) return false;
       if (statusFilter !== "all" && it.queueStatus !== statusFilter) return false;
       const term = q.trim().toLowerCase();
-      if (term && !s.nameTh.toLowerCase().includes(term) && !s.nameEn.toLowerCase().includes(term)) return false;
+      if (term && !s.nameTh.toLowerCase().includes(term) && !s.nameEn.toLowerCase().includes(term))
+        return false;
       return true;
     });
   }, [items, q, lineFilter, statusFilter]);
@@ -49,16 +68,35 @@ function QueuePage() {
       <DemoDisclaimer tone="warn">{t("demo.queue")}</DemoDisclaimer>
 
       <Card className="p-3 flex flex-col sm:flex-row gap-2 items-stretch">
-        <Input placeholder={t("common.search")} value={q} onChange={(e) => setQ(e.target.value)} className="flex-1" />
-        <select value={lineFilter} onChange={(e) => setLineFilter(e.target.value as LineId | "all")} className="border rounded-md bg-background px-2 py-1 text-sm">
+        <Input
+          placeholder={t("common.search")}
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          className="flex-1"
+        />
+        <select
+          value={lineFilter}
+          onChange={(e) => setLineFilter(e.target.value as LineId | "all")}
+          className="border rounded-md bg-background px-2 py-1 text-sm"
+        >
           <option value="all">— {t("queue.filterLine")} —</option>
           {LINES.filter((l) => l.status === "operational").map((l) => (
-            <option key={l.id} value={l.id}>{i18n.language === "th" ? l.nameTh : l.nameEn}</option>
+            <option key={l.id} value={l.id}>
+              {i18n.language === "th" ? l.nameTh : l.nameEn}
+            </option>
           ))}
         </select>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as QueueDemo["queueStatus"] | "all")} className="border rounded-md bg-background px-2 py-1 text-sm">
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as QueueDemo["queueStatus"] | "all")}
+          className="border rounded-md bg-background px-2 py-1 text-sm"
+        >
           <option value="all">— {t("queue.filterStatus")} —</option>
-          {(["low", "medium", "high", "very_high"] as const).map((s) => <option key={s} value={s}>{t(`queue.${s}`)}</option>)}
+          {(["low", "medium", "high", "very_high"] as const).map((s) => (
+            <option key={s} value={s}>
+              {t(`queue.${s}`)}
+            </option>
+          ))}
         </select>
       </Card>
 
@@ -66,8 +104,15 @@ function QueuePage() {
         {filtered.map((it) => {
           const st = getStation(it.stationId)!;
           const line = LINES.find((l) => l.id === st.lineId)!;
-          const hist = (history[it.stationId] ?? []).map((h) => ({ t: new Date(h.t).toLocaleTimeString(i18n.language, { hour: "2-digit", minute: "2-digit" }), wait: h.wait }));
-          const TrendIcon = it.trend === "up" ? TrendingUp : it.trend === "down" ? TrendingDown : Minus;
+          const hist = (history[it.stationId] ?? []).map((h) => ({
+            t: new Date(h.t).toLocaleTimeString(i18n.language, {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            wait: h.wait,
+          }));
+          const TrendIcon =
+            it.trend === "up" ? TrendingUp : it.trend === "down" ? TrendingDown : Minus;
           return (
             <Card key={it.stationId} className="p-4">
               <div className="flex items-start justify-between gap-3">
@@ -78,13 +123,32 @@ function QueuePage() {
                     <span className="text-xs text-muted-foreground">{st.code}</span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-3 items-center text-sm">
-                    <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full", STATUS_STYLE[it.queueStatus])}>{t(`queue.${it.queueStatus}`)}</span>
-                    <span>{t("queue.estimatedWait")} <b>{it.estimatedWaitMinutes}</b> {t("common.min")}</span>
-                    <span className="text-muted-foreground text-xs">{t("queue.activeMachines")}: {it.activeMachines} {t("queue.of")} {it.totalMachines}</span>
-                    <span className="text-muted-foreground text-xs inline-flex items-center gap-1"><TrendIcon className="size-3" /> {t(`queue.trend${it.trend === "up" ? "Up" : it.trend === "down" ? "Down" : "Stable"}`)}</span>
+                    <span
+                      className={cn(
+                        "text-xs font-medium px-2 py-0.5 rounded-full",
+                        STATUS_STYLE[it.queueStatus],
+                      )}
+                    >
+                      {t(`queue.${it.queueStatus}`)}
+                    </span>
+                    <span>
+                      {t("queue.estimatedWait")} <b>{it.estimatedWaitMinutes}</b> {t("common.min")}
+                    </span>
+                    <span className="text-muted-foreground text-xs">
+                      {t("queue.activeMachines")}: {it.activeMachines} {t("queue.of")}{" "}
+                      {it.totalMachines}
+                    </span>
+                    <span className="text-muted-foreground text-xs inline-flex items-center gap-1">
+                      <TrendIcon className="size-3" />{" "}
+                      {t(
+                        `queue.trend${it.trend === "up" ? "Up" : it.trend === "down" ? "Down" : "Stable"}`,
+                      )}
+                    </span>
                   </div>
                 </div>
-                <Button size="sm" asChild><Link to="/search">{t("queue.buy")}</Link></Button>
+                <Button size="sm" asChild>
+                  <Link to="/search">{t("queue.buy")}</Link>
+                </Button>
               </div>
               <div className="mt-3 h-24">
                 <ResponsiveContainer width="100%" height="100%">
@@ -93,11 +157,19 @@ function QueuePage() {
                     <XAxis dataKey="t" tick={{ fontSize: 10 }} />
                     <YAxis tick={{ fontSize: 10 }} width={24} />
                     <Tooltip />
-                    <Line type="monotone" dataKey="wait" stroke={line.color} strokeWidth={2} dot={false} />
+                    <Line
+                      type="monotone"
+                      dataKey="wait"
+                      stroke={line.color}
+                      strokeWidth={2}
+                      dot={false}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1">{t("queue.updated")}: {new Date(it.updatedAt).toLocaleTimeString(i18n.language)}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {t("queue.updated")}: {new Date(it.updatedAt).toLocaleTimeString(i18n.language)}
+              </p>
             </Card>
           );
         })}

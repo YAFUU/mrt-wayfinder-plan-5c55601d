@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { PageHeader, DemoDisclaimer } from "@/components/common";
 import { storage } from "@/services/storageService";
 import { toast } from "sonner";
@@ -17,6 +18,7 @@ function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [acceptedPolicy, setAcceptedPolicy] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const submit = (e: React.FormEvent) => {
@@ -25,6 +27,7 @@ function RegisterPage() {
     if (!email.trim()) { toast.error("กรุณากรอกอีเมล"); return; }
     if (password.length < 6) { toast.error("รหัสผ่านอย่างน้อย 6 ตัวอักษร"); return; }
     if (password !== confirm) { toast.error("รหัสผ่านไม่ตรงกัน"); return; }
+    if (!acceptedPolicy) { toast.error("กรุณายอมรับนโยบายความเป็นส่วนตัวและเงื่อนไขการใช้งาน"); return; }
     setBusy(true);
     const res = storage.register(email, password, name.trim());
     setBusy(false);
@@ -54,12 +57,28 @@ function RegisterPage() {
             <Label htmlFor="pw2">ยืนยันรหัสผ่าน</Label>
             <Input id="pw2" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" required />
           </div>
+          <label className="flex items-start gap-3 rounded-lg border bg-muted/40 p-3 text-sm leading-relaxed">
+            <Checkbox
+              checked={acceptedPolicy}
+              onCheckedChange={(checked) => setAcceptedPolicy(checked === true)}
+              className="mt-0.5"
+            />
+            <span>
+              ฉันยอมรับ{" "}
+              <Link to="/policy" className="font-medium text-primary hover:underline">
+                นโยบายความเป็นส่วนตัวและเงื่อนไขการใช้งาน
+              </Link>
+            </span>
+          </label>
           <Button type="submit" className="w-full h-11" disabled={busy}>
             <UserPlus className="size-4 mr-1.5" /> {busy ? "กำลังสมัคร…" : "สมัครสมาชิก"}
           </Button>
         </form>
         <p className="text-sm text-muted-foreground mt-4 text-center">
           มีบัญชีอยู่แล้ว? <Link to="/auth/login" className="text-primary font-medium hover:underline">เข้าสู่ระบบ</Link>
+        </p>
+        <p className="text-xs text-muted-foreground mt-2 text-center">
+          อ่านรายละเอียดเพิ่มเติมได้ที่ <Link to="/policy" className="text-primary hover:underline">นโยบายความเป็นส่วนตัว</Link>
         </p>
       </Card>
       <div className="mt-4"><DemoDisclaimer>ข้อมูลจะถูกเก็บไว้บนอุปกรณ์นี้เท่านั้น (โหมดสาธิต)</DemoDisclaimer></div>
