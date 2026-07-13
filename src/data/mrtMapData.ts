@@ -110,7 +110,7 @@ const INTERCHANGE_DIAGRAM_POINTS: Record<string, ReturnType<typeof diagramPoint>
   PK01: diagramPoint(0, 4.25),
   BL25: diagramPoint(3.4, -0.2),
   OR01: diagramPoint(3.4, -0.2),
-  PK29: diagramPoint(9.6, -2.35),
+  PK30: diagramPoint(9.6, -2.35),
   OR07: diagramPoint(9.6, -2.35),
   YL09: diagramPoint(4.72, -1.75),
   BR04: diagramPoint(4.72, -1.75),
@@ -149,9 +149,9 @@ function labelPriorityFor(station: MrtStation) {
       "PP11",
       "YL11",
       "YL23",
-      "PK13",
-      "PK15",
-      "PK29",
+      "PK14",
+      "PK16",
+      "PK30",
     ].includes(station.id)
   ) {
     return 2;
