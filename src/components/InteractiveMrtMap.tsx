@@ -101,10 +101,10 @@ const IMPORTANT_STATIONS = new Set([
   "YL11",
   "YL23",
   "PK01",
-  "PK09",
-  "PK13",
-  "PK15",
-  "PK29",
+  "PK10",
+  "PK14",
+  "PK16",
+  "PK30",
 ]);
 
 const MAP_STATION_BY_ID = new Map(MRT_STATIONS.map((station) => [station.stationId, station]));

@@ -450,7 +450,7 @@ export const EXITS: StationExit[] = [
     source: MRTA_SOURCE,
   },
   {
-    stationId: "PK09",
+    stationId: "PK10",
     exitCode: "1",
     nameTh: "อิมแพ็ค เมืองทองธานี",
     nameEn: "Impact Muang Thong Thani",
@@ -517,7 +517,7 @@ export const NEARBY_PLACES: NearbyPlace[] = [
     category: "landmark",
     lat: 13.9075,
     lng: 100.5432,
-    nearestStationId: "PK09",
+    nearestStationId: "PK10",
     suggestedExit: "1",
     walkingMeters: 350,
     source: MRTA_SOURCE,
@@ -596,7 +596,7 @@ export const NEARBY_PLACES: NearbyPlace[] = [
     category: "landmark",
     lat: 13.9091,
     lng: 100.5391,
-    nearestStationId: "PK09",
+    nearestStationId: "PK10",
     walkingMeters: 500,
     source: MRTA_SOURCE,
   },
@@ -607,7 +607,7 @@ export const NEARBY_PLACES: NearbyPlace[] = [
     category: "office",
     lat: 13.8886,
     lng: 100.5642,
-    nearestStationId: "PK11",
+    nearestStationId: "PK12",
     walkingMeters: 200,
     source: MRTA_SOURCE,
   },
@@ -639,8 +639,8 @@ export const INITIAL_QUEUE: QueueDemo[] = [
   { stationId: "YL08", queueStatus: "medium", estimatedWaitMinutes: 5, activeMachines: 3, totalMachines: 4, trend: "stable", updatedAt: new Date().toISOString() },
   { stationId: "YL23", queueStatus: "low", estimatedWaitMinutes: 2, activeMachines: 4, totalMachines: 4, trend: "down", updatedAt: new Date().toISOString() },
   { stationId: "PK01", queueStatus: "medium", estimatedWaitMinutes: 4, activeMachines: 3, totalMachines: 4, trend: "stable", updatedAt: new Date().toISOString() },
-  { stationId: "PK09", queueStatus: "very_high", estimatedWaitMinutes: 14, activeMachines: 4, totalMachines: 6, trend: "up", updatedAt: new Date().toISOString() },
-  { stationId: "PK29", queueStatus: "low", estimatedWaitMinutes: 2, activeMachines: 4, totalMachines: 4, trend: "stable", updatedAt: new Date().toISOString() },
+  { stationId: "PK10", queueStatus: "very_high", estimatedWaitMinutes: 14, activeMachines: 4, totalMachines: 6, trend: "up", updatedAt: new Date().toISOString() },
+  { stationId: "PK30", queueStatus: "low", estimatedWaitMinutes: 2, activeMachines: 4, totalMachines: 4, trend: "stable", updatedAt: new Date().toISOString() },
 ];
 
 export const SOURCES = { MRTA_SOURCE, OSM_SOURCE, DEMO_SOURCE };
