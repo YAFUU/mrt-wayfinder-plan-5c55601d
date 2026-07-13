@@ -227,14 +227,21 @@ function pointFeature(
   station: MrtMapStation,
   viewMode: MapViewMode,
   props: Record<string, unknown> = {},
+  lang: string = "th",
 ): Feature<Point> {
+  const primary = lang.startsWith("en")
+    ? station.nameEn || station.nameTh || station.code
+    : station.nameTh || station.nameEn || station.code;
+  const secondary = lang.startsWith("en")
+    ? station.nameTh || ""
+    : station.nameEn || "";
   return {
     type: "Feature",
     properties: {
       id: station.stationId,
       stationId: station.stationId,
       code: station.code,
-      label: `${station.nameTh || station.code}\n${station.nameEn || ""}`,
+      label: secondary ? `${primary}\n${secondary}` : primary,
       nameTh: station.nameTh,
       nameEn: station.nameEn,
       lineId: station.lineId,
@@ -249,14 +256,16 @@ function pointFeature(
   };
 }
 
+
 function singlePointCollection(
   station: MrtMapStation | null | undefined,
   viewMode: MapViewMode,
   props: Record<string, unknown> = {},
+  lang: string = "th",
 ): FeatureCollection<Point> {
   return {
     type: "FeatureCollection",
-    features: station ? [pointFeature(station, viewMode, props)] : [],
+    features: station ? [pointFeature(station, viewMode, props, lang)] : [],
   };
 }
 
@@ -321,16 +330,22 @@ function stationFeatures(
   routeSet: Set<string>,
   selectedId?: string,
   nearestId?: string,
+  lang: string = "th",
 ): FeatureCollection<Point> {
   return {
     type: "FeatureCollection",
     features: MRT_STATIONS.filter((station) => visible[station.lineId]).map((station) =>
-      pointFeature(station, viewMode, {
-        inRoute: routeSet.has(station.stationId),
-        isSelected: station.stationId === selectedId,
-        isNearest: station.stationId === nearestId,
-        showLabel: shouldShowLabel(station, zoom, viewMode, routeSet, selectedId, nearestId),
-      }),
+      pointFeature(
+        station,
+        viewMode,
+        {
+          inRoute: routeSet.has(station.stationId),
+          isSelected: station.stationId === selectedId,
+          isNearest: station.stationId === nearestId,
+          showLabel: shouldShowLabel(station, zoom, viewMode, routeSet, selectedId, nearestId),
+        },
+        lang,
+      ),
     ),
   };
 }
@@ -929,6 +944,7 @@ export function InteractiveMrtMap({
     const map = mapRef.current;
     if (!ready || !map) return;
 
+    const lang = i18n.language;
     const lineData = mrtLineFeatures(visible, viewMode);
     const stationData = stationFeatures(
       visible,
@@ -937,6 +953,7 @@ export function InteractiveMrtMap({
       routeSet,
       selected?.stationId,
       nearestStationId,
+      lang,
     );
     setGeoJsonData(map, SOURCE_IDS.lines, lineData);
     setGeoJsonData(map, SOURCE_IDS.stations, stationData);
@@ -944,7 +961,7 @@ export function InteractiveMrtMap({
     setGeoJsonData(
       map,
       SOURCE_IDS.selected,
-      singlePointCollection(selected, viewMode, { selected: true }),
+      singlePointCollection(selected, viewMode, { selected: true }, lang),
     );
     setGeoJsonData(
       map,
@@ -955,6 +972,7 @@ export function InteractiveMrtMap({
           : null,
         viewMode,
         { nearest: true },
+        lang,
       ),
     );
 
@@ -962,7 +980,7 @@ export function InteractiveMrtMap({
       console.log("[MRT map] rendered lines:", lineData.features.length);
       console.log("[MRT map] rendered stations:", stationData.features.length);
     }
-  }, [nearestStationId, ready, routeSet, routeStations, selected, viewMode, visible, zoom]);
+  }, [nearestStationId, ready, routeSet, routeStations, selected, viewMode, visible, zoom, i18n.language]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -1025,11 +1043,18 @@ export function InteractiveMrtMap({
     );
   }, [live.accuracy, live.status, liveLat, liveLng, nearestStationId, ready, viewMode]);
 
+  const isEn = i18n.language.startsWith("en");
+  const stationDisplayName = (s: { nameTh: string; nameEn: string }) =>
+    isEn ? s.nameEn || s.nameTh : s.nameTh || s.nameEn;
   const locationStatus =
     live.status === "watching" && live.nearestStation
       ? live.distanceMeters != null && live.distanceMeters <= 150
-        ? `คุณน่าจะอยู่ที่สถานี ${live.nearestStation.nameTh}`
-        : `สถานีที่ใกล้ที่สุดคือ ${live.nearestStation.nameTh}`
+        ? isEn
+          ? `You are likely at ${stationDisplayName(live.nearestStation)} station`
+          : `คุณน่าจะอยู่ที่สถานี ${stationDisplayName(live.nearestStation)}`
+        : isEn
+          ? `Nearest station is ${stationDisplayName(live.nearestStation)}`
+          : `สถานีที่ใกล้ที่สุดคือ ${stationDisplayName(live.nearestStation)}`
       : null;
 
   return (
@@ -1135,7 +1160,7 @@ export function InteractiveMrtMap({
                   className="h-1.5 w-8 rounded-full"
                   style={{ background: colorFor(line.id) }}
                 />
-                <span className="min-w-0 flex-1 truncate">{line.nameTh}</span>
+                <span className="min-w-0 flex-1 truncate">{isEn ? line.nameEn : line.nameTh}</span>
                 {line.status !== "operational" && (
                   <span className="text-[10px] text-warning">{t("map.future")}</span>
                 )}
@@ -1278,7 +1303,7 @@ export function InteractiveMrtMap({
                   {line.code.replace("MRT-", "")}
                 </span>
               </span>
-              <span className="min-w-0 flex-1 truncate">{line.nameTh}</span>
+              <span className="min-w-0 flex-1 truncate">{isEn ? line.nameEn : line.nameTh}</span>
             </div>
           ))}
           <div className="mt-1 flex items-center gap-2 border-t pt-2">
@@ -1307,8 +1332,8 @@ export function InteractiveMrtMap({
                   {selected.code}
                 </p>
               </div>
-              <p className="truncate text-lg font-bold">{selected.nameTh}</p>
-              <p className="truncate text-xs text-muted-foreground">{selected.nameEn}</p>
+              <p className="truncate text-lg font-bold">{isEn ? selected.nameEn : selected.nameTh}</p>
+              <p className="truncate text-xs text-muted-foreground">{isEn ? selected.nameTh : selected.nameEn}</p>
               {selected.isInterchange && (
                 <p className="mt-1 text-xs font-medium text-primary">
                   สถานีเชื่อมต่อ / Interchange
