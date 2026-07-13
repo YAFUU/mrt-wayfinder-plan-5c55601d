@@ -227,14 +227,21 @@ function pointFeature(
   station: MrtMapStation,
   viewMode: MapViewMode,
   props: Record<string, unknown> = {},
+  lang: string = "th",
 ): Feature<Point> {
+  const primary = lang.startsWith("en")
+    ? station.nameEn || station.nameTh || station.code
+    : station.nameTh || station.nameEn || station.code;
+  const secondary = lang.startsWith("en")
+    ? station.nameTh || ""
+    : station.nameEn || "";
   return {
     type: "Feature",
     properties: {
       id: station.stationId,
       stationId: station.stationId,
       code: station.code,
-      label: `${station.nameTh || station.code}\n${station.nameEn || ""}`,
+      label: secondary ? `${primary}\n${secondary}` : primary,
       nameTh: station.nameTh,
       nameEn: station.nameEn,
       lineId: station.lineId,
@@ -249,14 +256,16 @@ function pointFeature(
   };
 }
 
+
 function singlePointCollection(
   station: MrtMapStation | null | undefined,
   viewMode: MapViewMode,
   props: Record<string, unknown> = {},
+  lang: string = "th",
 ): FeatureCollection<Point> {
   return {
     type: "FeatureCollection",
-    features: station ? [pointFeature(station, viewMode, props)] : [],
+    features: station ? [pointFeature(station, viewMode, props, lang)] : [],
   };
 }
 
@@ -321,16 +330,22 @@ function stationFeatures(
   routeSet: Set<string>,
   selectedId?: string,
   nearestId?: string,
+  lang: string = "th",
 ): FeatureCollection<Point> {
   return {
     type: "FeatureCollection",
     features: MRT_STATIONS.filter((station) => visible[station.lineId]).map((station) =>
-      pointFeature(station, viewMode, {
-        inRoute: routeSet.has(station.stationId),
-        isSelected: station.stationId === selectedId,
-        isNearest: station.stationId === nearestId,
-        showLabel: shouldShowLabel(station, zoom, viewMode, routeSet, selectedId, nearestId),
-      }),
+      pointFeature(
+        station,
+        viewMode,
+        {
+          inRoute: routeSet.has(station.stationId),
+          isSelected: station.stationId === selectedId,
+          isNearest: station.stationId === nearestId,
+          showLabel: shouldShowLabel(station, zoom, viewMode, routeSet, selectedId, nearestId),
+        },
+        lang,
+      ),
     ),
   };
 }
@@ -929,6 +944,7 @@ export function InteractiveMrtMap({
     const map = mapRef.current;
     if (!ready || !map) return;
 
+    const lang = i18n.language;
     const lineData = mrtLineFeatures(visible, viewMode);
     const stationData = stationFeatures(
       visible,
@@ -937,6 +953,7 @@ export function InteractiveMrtMap({
       routeSet,
       selected?.stationId,
       nearestStationId,
+      lang,
     );
     setGeoJsonData(map, SOURCE_IDS.lines, lineData);
     setGeoJsonData(map, SOURCE_IDS.stations, stationData);
@@ -944,7 +961,7 @@ export function InteractiveMrtMap({
     setGeoJsonData(
       map,
       SOURCE_IDS.selected,
-      singlePointCollection(selected, viewMode, { selected: true }),
+      singlePointCollection(selected, viewMode, { selected: true }, lang),
     );
     setGeoJsonData(
       map,
@@ -955,6 +972,7 @@ export function InteractiveMrtMap({
           : null,
         viewMode,
         { nearest: true },
+        lang,
       ),
     );
 
@@ -962,7 +980,7 @@ export function InteractiveMrtMap({
       console.log("[MRT map] rendered lines:", lineData.features.length);
       console.log("[MRT map] rendered stations:", stationData.features.length);
     }
-  }, [nearestStationId, ready, routeSet, routeStations, selected, viewMode, visible, zoom]);
+  }, [nearestStationId, ready, routeSet, routeStations, selected, viewMode, visible, zoom, i18n.language]);
 
   useEffect(() => {
     const map = mapRef.current;
