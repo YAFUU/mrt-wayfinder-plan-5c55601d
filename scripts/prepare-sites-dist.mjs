@@ -1,5 +1,5 @@
-import { cp, mkdir, copyFile, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { cp, mkdir, copyFile, readdir, readFile, writeFile } from "node:fs/promises";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
@@ -13,24 +13,56 @@ await copyFile(resolve(root, ".openai", "hosting.json"), resolve(dist, ".openai"
 await copyFile(resolve(dist, "index.html"), resolve(publicDir, "index.html"));
 await cp(resolve(dist, "assets"), resolve(publicDir, "assets"), { recursive: true, force: true });
 
-await writeFile(
-  resolve(dist, "server", "index.js"),
-  `export default {
-  async fetch(request, env) {
-    const assets = env && env.ASSETS;
+const contentTypes = {
+  ".css": "text/css; charset=utf-8",
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+};
 
-    if (assets && typeof assets.fetch === "function") {
-      const response = await assets.fetch(request);
-      if (response.status !== 404) return response;
+async function collectFiles(dir, routePrefix = "") {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const files = {};
 
-      const url = new URL(request.url);
-      url.pathname = "/index.html";
-      url.search = "";
-      return assets.fetch(new Request(url, request));
+  for (const entry of entries) {
+    const absolutePath = join(dir, entry.name);
+    const routePath = `${routePrefix}/${entry.name}`;
+
+    if (entry.isDirectory()) {
+      Object.assign(files, await collectFiles(absolutePath, routePath));
+      continue;
     }
 
-    return new Response("MRT QuickPass deployment is ready.", {
-      headers: { "content-type": "text/plain; charset=utf-8" },
+    const extension = entry.name.slice(entry.name.lastIndexOf("."));
+    files[routePath] = {
+      body: await readFile(absolutePath, "utf8"),
+      type: contentTypes[extension] ?? "application/octet-stream",
+    };
+  }
+
+  return files;
+}
+
+const staticFiles = await collectFiles(publicDir);
+
+await writeFile(
+  resolve(dist, "server", "index.js"),
+  `const FILES = ${JSON.stringify(staticFiles)};
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const normalizedPath = url.pathname === "/" ? "/index.html" : url.pathname;
+    const file = FILES[normalizedPath] ?? FILES["/index.html"];
+
+    return new Response(file.body, {
+      headers: {
+        "content-type": file.type,
+        "cache-control": normalizedPath.startsWith("/assets/")
+          ? "public, max-age=31536000, immutable"
+          : "no-cache",
+      },
     });
   },
 };
