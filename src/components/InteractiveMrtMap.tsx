@@ -1043,11 +1043,18 @@ export function InteractiveMrtMap({
     );
   }, [live.accuracy, live.status, liveLat, liveLng, nearestStationId, ready, viewMode]);
 
+  const isEn = i18n.language.startsWith("en");
+  const stationDisplayName = (s: { nameTh: string; nameEn: string }) =>
+    isEn ? s.nameEn || s.nameTh : s.nameTh || s.nameEn;
   const locationStatus =
     live.status === "watching" && live.nearestStation
       ? live.distanceMeters != null && live.distanceMeters <= 150
-        ? `คุณน่าจะอยู่ที่สถานี ${live.nearestStation.nameTh}`
-        : `สถานีที่ใกล้ที่สุดคือ ${live.nearestStation.nameTh}`
+        ? isEn
+          ? `You are likely at ${stationDisplayName(live.nearestStation)} station`
+          : `คุณน่าจะอยู่ที่สถานี ${stationDisplayName(live.nearestStation)}`
+        : isEn
+          ? `Nearest station is ${stationDisplayName(live.nearestStation)}`
+          : `สถานีที่ใกล้ที่สุดคือ ${stationDisplayName(live.nearestStation)}`
       : null;
 
   return (
@@ -1153,7 +1160,7 @@ export function InteractiveMrtMap({
                   className="h-1.5 w-8 rounded-full"
                   style={{ background: colorFor(line.id) }}
                 />
-                <span className="min-w-0 flex-1 truncate">{line.nameTh}</span>
+                <span className="min-w-0 flex-1 truncate">{isEn ? line.nameEn : line.nameTh}</span>
                 {line.status !== "operational" && (
                   <span className="text-[10px] text-warning">{t("map.future")}</span>
                 )}
@@ -1296,7 +1303,7 @@ export function InteractiveMrtMap({
                   {line.code.replace("MRT-", "")}
                 </span>
               </span>
-              <span className="min-w-0 flex-1 truncate">{line.nameTh}</span>
+              <span className="min-w-0 flex-1 truncate">{isEn ? line.nameEn : line.nameTh}</span>
             </div>
           ))}
           <div className="mt-1 flex items-center gap-2 border-t pt-2">
@@ -1325,8 +1332,8 @@ export function InteractiveMrtMap({
                   {selected.code}
                 </p>
               </div>
-              <p className="truncate text-lg font-bold">{selected.nameTh}</p>
-              <p className="truncate text-xs text-muted-foreground">{selected.nameEn}</p>
+              <p className="truncate text-lg font-bold">{isEn ? selected.nameEn : selected.nameTh}</p>
+              <p className="truncate text-xs text-muted-foreground">{isEn ? selected.nameTh : selected.nameEn}</p>
               {selected.isInterchange && (
                 <p className="mt-1 text-xs font-medium text-primary">
                   สถานีเชื่อมต่อ / Interchange
