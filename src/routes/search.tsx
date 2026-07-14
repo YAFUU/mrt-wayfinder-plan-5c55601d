@@ -7,7 +7,7 @@ import { PageHeader, EmptyState } from "@/components/common";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { searchStations } from "@/services/routeService";
+import { getStation, searchStations } from "@/services/routeService";
 import { NEARBY_PLACES, LINES } from "@/data/network";
 import { useTripStore } from "@/stores/tripStore";
 import { storage } from "@/services/storageService";
@@ -181,32 +181,39 @@ function Search() {
                 {t("search.sectionPlaces")}
               </h3>
               <div className="space-y-2">
-                {placeResults.map((p) => (
-                  <Card key={p.id} className="p-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm">{getLocalizedName(p, language)}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {getSecondaryLocalizedName(p, language)
-                            ? `${getSecondaryLocalizedName(p, language)} · `
-                            : ""}
-                          {t("search.nearStation", { station: p.nearestStationId })} ·{" "}
-                          {t("search.walkDistance", { distance: p.walkingMeters })}
-                        </p>
+                {placeResults.map((p) => {
+                  const nearestStation = getStation(p.nearestStationId);
+                  const stationLabel = nearestStation
+                    ? `${nearestStation.code} ${getLocalizedName(nearestStation, language)}`
+                    : p.nearestStationId;
+
+                  return (
+                    <Card key={p.id} className="p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm">{getLocalizedName(p, language)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {getSecondaryLocalizedName(p, language)
+                              ? `${getSecondaryLocalizedName(p, language)} · `
+                              : ""}
+                            {t("search.nearStation", { station: stationLabel })} ·{" "}
+                            {t("search.walkDistance", { distance: p.walkingMeters })}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setDestination(p.nearestStationId);
+                            commitSearch(q);
+                            nav({ to: "/plan" });
+                          }}
+                        >
+                          {t("search.setDestination")}
+                        </Button>
                       </div>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setDestination(p.nearestStationId);
-                          commitSearch(q);
-                          nav({ to: "/plan" });
-                        }}
-                      >
-                        {t("search.setDestination")}
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
+                    </Card>
+                  );
+                })}
               </div>
             </section>
           )}
