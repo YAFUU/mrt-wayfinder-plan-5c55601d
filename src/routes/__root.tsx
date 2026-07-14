@@ -11,17 +11,20 @@ import { useApplyProfile } from "@/hooks/useApplyProfile";
 import { EmptyState, ErrorState } from "@/components/common";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { validateDataset } from "@/data/network";
+import { useTranslation } from "react-i18next";
 
 function NotFound() {
+  const { t } = useTranslation();
   return (
     <AppShell>
       <div className="p-8">
         <EmptyState
-          title="404 · ไม่พบหน้านี้"
-          description="ลิงก์อาจไม่ถูกต้องหรือถูกย้าย"
+          title={`404 · ${t("notFound.title")}`}
+          description={t("notFound.desc")}
           action={
             <Button asChild>
-              <Link to="/">กลับหน้าแรก</Link>
+              <Link to="/">{t("notFound.home")}</Link>
             </Button>
           }
         />
@@ -31,13 +34,14 @@ function NotFound() {
 }
 
 function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
+  const { t } = useTranslation();
   useEffect(() => {
     reportLovableError(error, { boundary: "root" });
   }, [error]);
   return (
     <AppShell>
       <div className="p-8">
-        <ErrorState title="เกิดข้อผิดพลาด" description={error.message} onRetry={reset} />
+        <ErrorState title={t("common.error")} description={error.message} onRetry={reset} />
       </div>
     </AppShell>
   );
@@ -48,11 +52,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "MRT QuickPass — ซื้อตั๋วล่วงหน้า" },
+      { title: "MRT QuickPass" },
       {
         name: "description",
-        content:
-          "MRT QuickPass ช่วยวางแผนเส้นทาง MRT ทั้ง 4 สาย ค้นหาสถานี ดูค่าโดยสาร และรับ Demo QR Ticket สำหรับสาธิต",
+        content: "Plan MRT trips, check queues and get Demo QR tickets with MRT QuickPass.",
       },
       { property: "og:title", content: "MRT QuickPass" },
       {
@@ -103,6 +106,13 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useApplyProfile();
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const datasetErrors = validateDataset();
+    if (datasetErrors.length > 0) {
+      console.warn("[MRT i18n] Dataset validation failed:", datasetErrors);
+    }
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <AppShell>

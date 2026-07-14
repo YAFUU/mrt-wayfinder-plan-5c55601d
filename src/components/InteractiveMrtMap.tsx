@@ -28,6 +28,7 @@ import { useSharedLiveLocation } from "@/components/LocationProvider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { getLocalizedName } from "@/lib/display";
 
 const BKK_CENTER: [number, number] = [100.55, 13.78];
 const EMPTY_POINTS: FeatureCollection<Point> = { type: "FeatureCollection", features: [] };
@@ -233,7 +234,7 @@ function pointFeature(
   const primary = lang.startsWith("en")
     ? station.nameEn || station.nameTh || station.code
     : station.nameTh || station.nameEn || station.code;
-  const secondary = lang.startsWith("en") ? station.nameTh || "" : station.nameEn || "";
+  const secondary = lang.startsWith("en") ? station.code : station.nameEn || "";
   return {
     type: "Feature",
     properties: {
@@ -736,11 +737,6 @@ function stationFromFeature(event: MapLayerMouseEvent) {
   return stationId ? mapStationFor(stationId) : undefined;
 }
 
-function formatDistance(meters: number | null) {
-  if (meters == null) return "-";
-  return `${Math.round(meters).toLocaleString("th-TH")} ม.`;
-}
-
 function formatLastUpdated(value: number | null, locale: string) {
   if (!value) return "-";
   return new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-US", {
@@ -770,7 +766,22 @@ function writeCollapsedPreference(key: string, value: boolean) {
   }
 }
 
-function describeMapLibreError(error: Error | null) {
+function describeMapLibreError(error: Error | null, isEn: boolean) {
+  if (isEn) {
+    return {
+      title: "MapLibre GL could not load",
+      message:
+        error?.message ??
+        "The map could not start WebGL, but the rest of the app remains available.",
+      tips: [
+        "Check that your browser supports WebGL and hardware acceleration is enabled.",
+        "Reload the map page.",
+        "If the base map is missing, OpenStreetMap tiles may be blocked or the network may be unavailable.",
+        "MapLibre GL does not require a Google Maps API key or HTTP referrer.",
+      ],
+    };
+  }
+
   return {
     title: "โหลด MapLibre GL ไม่สำเร็จ",
     message:
@@ -908,9 +919,7 @@ export function InteractiveMrtMap({
         }
 
         if (isBaseMapError || !map.loaded()) {
-          setMapIssue(
-            "โหลดพื้นหลังแผนที่ไม่สำเร็จ แต่ยังแสดงเส้น MRT ได้ กรุณาตรวจอินเทอร์เน็ตหรือ tile provider",
-          );
+          setMapIssue(i18n.t("map.tileLoadError"));
         }
       });
 
@@ -934,7 +943,7 @@ export function InteractiveMrtMap({
     } catch (err) {
       setError(err instanceof Error ? err : new Error("MapLibre initialization failed"));
     }
-  }, []);
+  }, [i18n]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -1060,16 +1069,12 @@ export function InteractiveMrtMap({
 
   const isEn = i18n.language.startsWith("en");
   const stationDisplayName = (s: { nameTh: string; nameEn: string }) =>
-    isEn ? s.nameEn || s.nameTh : s.nameTh || s.nameEn;
+    getLocalizedName(s, i18n.language);
   const locationStatus =
     live.status === "watching" && live.nearestStation
       ? live.distanceMeters != null && live.distanceMeters <= 150
-        ? isEn
-          ? `You are likely at ${stationDisplayName(live.nearestStation)} station`
-          : `คุณน่าจะอยู่ที่สถานี ${stationDisplayName(live.nearestStation)}`
-        : isEn
-          ? `Nearest station is ${stationDisplayName(live.nearestStation)}`
-          : `สถานีที่ใกล้ที่สุดคือ ${stationDisplayName(live.nearestStation)}`
+        ? t("location.likelyAt", { station: stationDisplayName(live.nearestStation) })
+        : t("location.nearestStation", { station: stationDisplayName(live.nearestStation) })
       : null;
 
   return (
@@ -1085,7 +1090,7 @@ export function InteractiveMrtMap({
               </div>
               <div className="min-w-0">
                 {(() => {
-                  const detail = describeMapLibreError(error);
+                  const detail = describeMapLibreError(error, isEn);
                   return (
                     <>
                       <h2 className="text-lg font-bold text-destructive">{detail.title}</h2>
@@ -1106,7 +1111,7 @@ export function InteractiveMrtMap({
 
       {mapIssue && (
         <Card className="absolute left-1/2 top-3 z-[420] w-[min(420px,calc(100%-1.5rem))] -translate-x-1/2 border-warning/40 bg-white/95 p-3 text-sm shadow-xl backdrop-blur">
-          <p className="font-semibold text-warning">base map โหลดไม่ครบ</p>
+          <p className="font-semibold text-warning">{t("map.baseMapIncomplete")}</p>
           <p className="mt-1 text-muted-foreground">{mapIssue}</p>
         </Card>
       )}
@@ -1122,8 +1127,10 @@ export function InteractiveMrtMap({
         >
           <div className="mb-3 flex items-center justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-xs font-bold text-primary">ตัวเลือกแผนที่</p>
-              <p className="truncate text-[10px] text-muted-foreground">สายรถไฟและโหมดแผนที่</p>
+              <p className="text-xs font-bold text-primary">{t("map.controlsTitle")}</p>
+              <p className="truncate text-[10px] text-muted-foreground">
+                {t("map.controlsSubtitle")}
+              </p>
             </div>
             <Button
               type="button"
@@ -1131,7 +1138,7 @@ export function InteractiveMrtMap({
               variant="ghost"
               className="size-10 shrink-0 rounded-full hover:bg-primary/10 focus-visible:ring-primary/30"
               onClick={() => setIsLinePanelCollapsed(true)}
-              aria-label="ซ่อนตัวเลือกสายรถไฟ"
+              aria-label={t("map.hideLineOptions")}
             >
               <ChevronLeft className="size-4" />
             </Button>
@@ -1144,7 +1151,7 @@ export function InteractiveMrtMap({
               onClick={() => setViewMode("map")}
             >
               <MapIcon className="size-3.5" />
-              แผนที่จริง
+              {t("map.actualMap")}
             </Button>
             <Button
               size="sm"
@@ -1153,7 +1160,7 @@ export function InteractiveMrtMap({
               onClick={() => setViewMode("diagram")}
             >
               <Layers className="size-3.5" />
-              แผนผัง
+              {t("map.diagram")}
             </Button>
           </div>
           <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">
@@ -1195,10 +1202,10 @@ export function InteractiveMrtMap({
               : "pointer-events-none -translate-x-full opacity-0",
           )}
           onClick={() => setIsLinePanelCollapsed(false)}
-          aria-label="แสดงตัวเลือกสายรถไฟ"
+          aria-label={t("map.showLineOptions")}
         >
           <Layers className="size-4" />
-          <span className="ml-1.5 text-xs font-semibold">สายรถไฟ</span>
+          <span className="ml-1.5 text-xs font-semibold">{t("map.lines")}</span>
         </Button>
       </div>
 
@@ -1223,7 +1230,7 @@ export function InteractiveMrtMap({
               variant="ghost"
               className="absolute right-2 top-2 z-10 size-10 rounded-full hover:bg-primary/10 focus-visible:ring-primary/30"
               onClick={() => setIsRealtimePanelCollapsed(true)}
-              aria-label="ซ่อนตำแหน่ง Real-time"
+              aria-label={t("location.hideRealtime")}
             >
               <ChevronRight className="size-4" />
             </Button>
@@ -1235,41 +1242,41 @@ export function InteractiveMrtMap({
               </div>
               <div className="min-w-0 flex-1 pr-10">
                 <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">
-                  ตำแหน่ง Real-time
+                  {t("location.realtimeTitle")}
                 </p>
                 {locationStatus ? (
                   <>
                     <p className="mt-0.5 font-semibold leading-snug">{locationStatus}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      ตอนนี้คุณอยู่ใกล้สถานี: {live.nearestStation?.nameTh}
+                      {t("location.currentNear", {
+                        station: stationDisplayName(live.nearestStation!),
+                      })}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      ระยะห่างประมาณ: {formatDistance(live.distanceMeters)}
+                      {t("location.distance", {
+                        distance: Math.round(live.distanceMeters ?? 0),
+                      })}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      อัปเดตล่าสุด: {formatLastUpdated(live.updatedAt, i18n.language)}
+                      {t("location.updated", {
+                        time: formatLastUpdated(live.updatedAt, i18n.language),
+                      })}
                     </p>
                   </>
                 ) : live.status === "denied" ? (
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    ไม่สามารถเข้าถึงตำแหน่งได้ กรุณาอนุญาต Location ในเบราว์เซอร์
-                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{t("location.denied")}</p>
                 ) : live.status === "unsupported" ? (
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    เบราว์เซอร์นี้ไม่รองรับการระบุตำแหน่ง
-                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{t("location.unsupported")}</p>
                 ) : live.status === "requesting" ? (
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    กำลังขอสิทธิ์ตำแหน่งจากเบราว์เซอร์...
-                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{t("location.requesting")}</p>
                 ) : (
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {live.error ?? "กำลังอ่านตำแหน่งของคุณ"}
+                    {live.status === "error" ? t("location.readError") : t("location.reading")}
                   </p>
                 )}
                 {live.status === "watching" && (
                   <Button size="sm" variant="outline" className="mt-2 h-8" onClick={live.stop}>
-                    หยุดติดตามตำแหน่ง
+                    {t("location.stopTracking")}
                   </Button>
                 )}
               </div>
@@ -1287,10 +1294,10 @@ export function InteractiveMrtMap({
                 : "pointer-events-none translate-x-full opacity-0",
             )}
             onClick={() => setIsRealtimePanelCollapsed(false)}
-            aria-label="แสดงตำแหน่ง Real-time"
+            aria-label={t("location.showRealtime")}
           >
             <LocateFixed className="size-4" />
-            <span className="ml-1.5 text-xs font-semibold">ตำแหน่ง</span>
+            <span className="ml-1.5 text-xs font-semibold">{t("location.shortLabel")}</span>
           </Button>
         </div>
       )}
@@ -1304,7 +1311,7 @@ export function InteractiveMrtMap({
         <div className={cn("flex items-center gap-2 pr-9", !isLegendCollapsed && "mb-2")}>
           <Navigation className="size-4 shrink-0 text-primary" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-bold">{isEn ? "Legend" : "สัญลักษณ์ Legend"}</p>
+            <p className="truncate text-sm font-bold">{t("map.legendTitle")}</p>
             {!isLegendCollapsed && (
               <p className="truncate text-[10px] text-muted-foreground">
                 MapLibre schematic overlay
@@ -1320,15 +1327,7 @@ export function InteractiveMrtMap({
           className="absolute right-2 top-2 size-8 rounded-full text-primary hover:bg-primary/10 focus-visible:ring-primary/30"
           onClick={() => setIsLegendCollapsed((current) => !current)}
           aria-expanded={!isLegendCollapsed}
-          aria-label={
-            isEn
-              ? isLegendCollapsed
-                ? "Expand map legend"
-                : "Collapse map legend"
-              : isLegendCollapsed
-                ? "แสดงสัญลักษณ์แผนที่"
-                : "ซ่อนสัญลักษณ์แผนที่"
-          }
+          aria-label={t(isLegendCollapsed ? "map.expandLegend" : "map.collapseLegend")}
         >
           {isLegendCollapsed ? (
             <ChevronLeft className="size-4" />
@@ -1360,11 +1359,11 @@ export function InteractiveMrtMap({
               <span className="grid size-5 place-items-center rounded-full border-2 border-slate-900 bg-white text-[8px] font-bold">
                 INT
               </span>
-              <span>{isEn ? "Interchange station" : "สถานีเชื่อมต่อ"}</span>
+              <span>{t("map.interchange")}</span>
             </div>
             <div className="flex items-center gap-2">
               <Radio className="size-5 text-blue-600" />
-              <span>{isEn ? "Real-time user location" : "ตำแหน่งผู้ใช้แบบ Real-time"}</span>
+              <span>{t("map.realtimeUserLocation")}</span>
             </div>
           </div>
         )}
@@ -1386,13 +1385,9 @@ export function InteractiveMrtMap({
               <p className="truncate text-lg font-bold">
                 {isEn ? selected.nameEn : selected.nameTh}
               </p>
-              <p className="truncate text-xs text-muted-foreground">
-                {isEn ? selected.nameTh : selected.nameEn}
-              </p>
+              {!isEn && <p className="truncate text-xs text-muted-foreground">{selected.nameEn}</p>}
               {selected.isInterchange && (
-                <p className="mt-1 text-xs font-medium text-primary">
-                  สถานีเชื่อมต่อ / Interchange
-                </p>
+                <p className="mt-1 text-xs font-medium text-primary">{t("map.interchange")}</p>
               )}
             </div>
             <Button

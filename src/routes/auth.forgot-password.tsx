@@ -8,10 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader, DemoDisclaimer } from "@/components/common";
 import { storage } from "@/services/storageService";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/auth/forgot-password")({ component: ForgotPasswordPage });
 
 function ForgotPasswordPage() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const [email, setEmail] = useState("");
   const [emailChecked, setEmailChecked] = useState(false);
@@ -21,11 +23,11 @@ function ForgotPasswordPage() {
   const checkEmail = (event: React.FormEvent) => {
     event.preventDefault();
     if (!email.trim()) {
-      toast.error("กรุณากรอกอีเมล");
+      toast.error(t("auth.errors.emailRequired"));
       return;
     }
     if (!storage.accountExists(email)) {
-      toast.error("ไม่พบบัญชีนี้ในระบบ");
+      toast.error(t("auth.errors.accountNotFound"));
       setEmailChecked(false);
       return;
     }
@@ -35,34 +37,31 @@ function ForgotPasswordPage() {
   const reset = (event: React.FormEvent) => {
     event.preventDefault();
     if (password.length < 6) {
-      toast.error("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
+      toast.error(t("auth.errors.passwordLength"));
       return;
     }
     if (password !== confirm) {
-      toast.error("รหัสผ่านยืนยันไม่ตรงกัน");
+      toast.error(t("auth.errors.passwordMismatch"));
       return;
     }
     const result = storage.resetPassword(email, password);
     if (!result.ok) {
-      toast.error(result.error ?? "เปลี่ยนรหัสผ่านไม่สำเร็จ");
+      toast.error(t("auth.errors.resetFailed"));
       return;
     }
-    toast.success("เปลี่ยนรหัสผ่านเรียบร้อยแล้ว");
+    toast.success(t("auth.forgot.success"));
     nav({ to: "/auth/login" });
   };
 
   return (
     <div className="p-4 lg:p-8 max-w-md mx-auto">
-      <PageHeader
-        title="ลืมรหัสผ่าน"
-        subtitle="รีเซ็ตรหัสผ่านสำหรับบัญชีสาธิตที่เก็บไว้ในเครื่องนี้"
-      />
+      <PageHeader title={t("auth.forgot.title")} subtitle={t("auth.forgot.subtitle")} />
 
       <Card className="p-6">
         {!emailChecked ? (
           <form onSubmit={checkEmail} className="space-y-4">
             <div>
-              <Label htmlFor="forgot-email">อีเมล</Label>
+              <Label htmlFor="forgot-email">{t("auth.email")}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -76,15 +75,17 @@ function ForgotPasswordPage() {
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full h-11">ตรวจสอบบัญชี</Button>
+            <Button type="submit" className="w-full h-11">
+              {t("auth.forgot.checkAccount")}
+            </Button>
           </form>
         ) : (
           <form onSubmit={reset} className="space-y-4">
             <div className="rounded-lg bg-muted p-3 text-sm">
-              พบบัญชี <strong>{email.trim().toLowerCase()}</strong>
+              {t("auth.forgot.accountFound")} <strong>{email.trim().toLowerCase()}</strong>
             </div>
             <div>
-              <Label htmlFor="new-password">รหัสผ่านใหม่</Label>
+              <Label htmlFor="new-password">{t("auth.forgot.newPassword")}</Label>
               <div className="relative">
                 <KeyRound className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -99,7 +100,7 @@ function ForgotPasswordPage() {
               </div>
             </div>
             <div>
-              <Label htmlFor="confirm-password">ยืนยันรหัสผ่านใหม่</Label>
+              <Label htmlFor="confirm-password">{t("auth.forgot.confirmNewPassword")}</Label>
               <Input
                 id="confirm-password"
                 type="password"
@@ -109,22 +110,22 @@ function ForgotPasswordPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full h-11">เปลี่ยนรหัสผ่าน</Button>
+            <Button type="submit" className="w-full h-11">
+              {t("auth.forgot.action")}
+            </Button>
           </form>
         )}
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          จำรหัสผ่านได้แล้ว?{" "}
+          {t("auth.forgot.remembered")}{" "}
           <Link to="/auth/login" className="font-medium text-primary hover:underline">
-            เข้าสู่ระบบ
+            {t("auth.login.action")}
           </Link>
         </p>
       </Card>
 
       <div className="mt-4">
-        <DemoDisclaimer>
-          ฟีเจอร์นี้เป็นโหมดทดลองสำหรับบัญชีที่เก็บในเครื่องเท่านั้น ไม่ใช่ระบบรีเซ็ตรหัสผ่านผ่านอีเมลจริง
-        </DemoDisclaimer>
+        <DemoDisclaimer>{t("auth.forgot.demoDisclaimer")}</DemoDisclaimer>
       </div>
     </div>
   );

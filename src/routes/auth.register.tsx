@@ -9,10 +9,12 @@ import { PageHeader, DemoDisclaimer } from "@/components/common";
 import { storage } from "@/services/storageService";
 import { toast } from "sonner";
 import { UserPlus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/auth/register")({ component: RegisterPage });
 
 function RegisterPage() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -23,39 +25,84 @@ function RegisterPage() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) { toast.error("กรุณากรอกชื่อ"); return; }
-    if (!email.trim()) { toast.error("กรุณากรอกอีเมล"); return; }
-    if (password.length < 6) { toast.error("รหัสผ่านอย่างน้อย 6 ตัวอักษร"); return; }
-    if (password !== confirm) { toast.error("รหัสผ่านไม่ตรงกัน"); return; }
-    if (!acceptedPolicy) { toast.error("กรุณายอมรับนโยบายความเป็นส่วนตัวและเงื่อนไขการใช้งาน"); return; }
+    if (!name.trim()) {
+      toast.error(t("auth.errors.nameRequired"));
+      return;
+    }
+    if (!email.trim()) {
+      toast.error(t("auth.errors.emailRequired"));
+      return;
+    }
+    if (password.length < 6) {
+      toast.error(t("auth.errors.passwordLength"));
+      return;
+    }
+    if (password !== confirm) {
+      toast.error(t("auth.errors.passwordMismatch"));
+      return;
+    }
+    if (!acceptedPolicy) {
+      toast.error(t("auth.errors.policyRequired"));
+      return;
+    }
     setBusy(true);
     const res = storage.register(email, password, name.trim());
     setBusy(false);
-    if (!res.ok) { toast.error(res.error ?? "สมัครสมาชิกไม่สำเร็จ"); return; }
-    toast.success("สมัครสมาชิกสำเร็จ");
+    if (!res.ok) {
+      toast.error(t("auth.errors.registerFailed"));
+      return;
+    }
+    toast.success(t("auth.register.success"));
     nav({ to: "/guide" });
   };
 
   return (
     <div className="p-4 lg:p-8 max-w-md mx-auto">
-      <PageHeader title="สมัครสมาชิก" subtitle="สร้างบัญชีเพื่อใช้กระเป๋าเงินและติดตามการเดินทางของคุณ" />
+      <PageHeader title={t("auth.register.title")} subtitle={t("auth.register.subtitle")} />
       <Card className="p-6">
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <Label htmlFor="name">ชื่อที่แสดง</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} required />
+            <Label htmlFor="name">{t("auth.displayName")}</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={40}
+              required
+            />
           </div>
           <div>
-            <Label htmlFor="email">อีเมล</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
+            <Label htmlFor="email">{t("auth.email")}</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              required
+            />
           </div>
           <div>
-            <Label htmlFor="pw">รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)</Label>
-            <Input id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" required />
+            <Label htmlFor="pw">{t("auth.register.passwordLabel")}</Label>
+            <Input
+              id="pw"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+              required
+            />
           </div>
           <div>
-            <Label htmlFor="pw2">ยืนยันรหัสผ่าน</Label>
-            <Input id="pw2" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" required />
+            <Label htmlFor="pw2">{t("auth.confirmPassword")}</Label>
+            <Input
+              id="pw2"
+              type="password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              autoComplete="new-password"
+              required
+            />
           </div>
           <label className="flex items-start gap-3 rounded-lg border bg-muted/40 p-3 text-sm leading-relaxed">
             <Checkbox
@@ -64,24 +111,33 @@ function RegisterPage() {
               className="mt-0.5"
             />
             <span>
-              ฉันยอมรับ{" "}
+              {t("auth.register.acceptPrefix")}{" "}
               <Link to="/policy" className="font-medium text-primary hover:underline">
-                นโยบายความเป็นส่วนตัวและเงื่อนไขการใช้งาน
+                {t("auth.privacyAndTerms")}
               </Link>
             </span>
           </label>
           <Button type="submit" className="w-full h-11" disabled={busy}>
-            <UserPlus className="size-4 mr-1.5" /> {busy ? "กำลังสมัคร…" : "สมัครสมาชิก"}
+            <UserPlus className="size-4 mr-1.5" />{" "}
+            {busy ? t("auth.register.busy") : t("auth.register.action")}
           </Button>
         </form>
         <p className="text-sm text-muted-foreground mt-4 text-center">
-          มีบัญชีอยู่แล้ว? <Link to="/auth/login" className="text-primary font-medium hover:underline">เข้าสู่ระบบ</Link>
+          {t("auth.register.hasAccount")}{" "}
+          <Link to="/auth/login" className="text-primary font-medium hover:underline">
+            {t("auth.login.action")}
+          </Link>
         </p>
         <p className="text-xs text-muted-foreground mt-2 text-center">
-          อ่านรายละเอียดเพิ่มเติมได้ที่ <Link to="/policy" className="text-primary hover:underline">นโยบายความเป็นส่วนตัว</Link>
+          {t("auth.register.readMore")}{" "}
+          <Link to="/policy" className="text-primary hover:underline">
+            {t("auth.privacyPolicy")}
+          </Link>
         </p>
       </Card>
-      <div className="mt-4"><DemoDisclaimer>ข้อมูลจะถูกเก็บไว้บนอุปกรณ์นี้เท่านั้น (โหมดสาธิต)</DemoDisclaimer></div>
+      <div className="mt-4">
+        <DemoDisclaimer>{t("auth.register.demoDisclaimer")}</DemoDisclaimer>
+      </div>
     </div>
   );
 }

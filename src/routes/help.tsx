@@ -6,7 +6,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { storage } from "@/services/storageService";
 import { useSupportRequests } from "@/hooks/useStore";
 import { toast } from "sonner";
@@ -20,7 +25,10 @@ function Help() {
   const [msg, setMsg] = useState("");
 
   const submit = () => {
-    if (!issue.trim() || !msg.trim()) { toast.error("กรุณากรอกข้อมูลให้ครบ"); return; }
+    if (!issue.trim() || !msg.trim()) {
+      toast.error(t("help.completeFields"));
+      return;
+    }
     const ref = "QP-HELP-" + Math.floor(10000 + Math.random() * 90000);
     storage.addSupport({
       id: "SUP-" + Math.random().toString(36).slice(2, 8).toUpperCase(),
@@ -30,7 +38,8 @@ function Help() {
       referenceCode: ref,
       createdAt: new Date().toISOString(),
     });
-    setIssue(""); setMsg("");
+    setIssue("");
+    setMsg("");
     toast.success(`${t("help.submitted")}: ${ref}`);
   };
 
@@ -56,18 +65,27 @@ function Help() {
         <h3 className="font-semibold">{t("help.contact")}</h3>
         <div>
           <label className="text-xs text-muted-foreground">{t("help.issueType")}</label>
-          <select value={issue} onChange={(e) => setIssue(e.target.value)} className="w-full mt-1 border rounded-md bg-background px-2 py-2 text-sm">
+          <select
+            value={issue}
+            onChange={(e) => setIssue(e.target.value)}
+            className="w-full mt-1 border rounded-md bg-background px-2 py-2 text-sm"
+          >
             <option value="">—</option>
-            <option value="qr_scan">QR สแกนไม่ผ่าน</option>
-            <option value="expired">Ticket หมดอายุ</option>
-            <option value="wrong_dest">เลือกปลายทางผิด</option>
-            <option value="payment">ปัญหาการชำระเงิน</option>
-            <option value="other">อื่นๆ</option>
+            <option value="qr_scan">{t("help.issueOptions.qrScan")}</option>
+            <option value="expired">{t("help.issueOptions.expired")}</option>
+            <option value="wrong_dest">{t("help.issueOptions.wrongDestination")}</option>
+            <option value="payment">{t("help.issueOptions.payment")}</option>
+            <option value="other">{t("help.issueOptions.other")}</option>
           </select>
         </div>
         <div>
           <label className="text-xs text-muted-foreground">{t("help.message")}</label>
-          <Textarea value={msg} onChange={(e) => setMsg(e.target.value)} rows={4} className="mt-1" />
+          <Textarea
+            value={msg}
+            onChange={(e) => setMsg(e.target.value)}
+            rows={4}
+            className="mt-1"
+          />
         </div>
         <Button onClick={submit}>{t("help.submit")}</Button>
       </Card>
@@ -78,8 +96,12 @@ function Help() {
           <div className="space-y-1 text-sm">
             {reqs.map((r) => (
               <div key={r.id} className="flex justify-between border-b py-1">
-                <span>{r.referenceCode} · {r.issueType}</span>
-                <span className="text-xs text-muted-foreground">{new Date(r.createdAt).toLocaleDateString()}</span>
+                <span>
+                  {r.referenceCode} · {r.issueType}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {new Date(r.createdAt).toLocaleDateString()}
+                </span>
               </div>
             ))}
           </div>

@@ -11,6 +11,7 @@ import { useProfile, useTickets, useSavedTrips } from "@/hooks/useStore";
 import { useTripStore } from "@/stores/tripStore";
 import { LINES } from "@/data/network";
 import { useSharedLiveLocation } from "@/components/LocationProvider";
+import { getLocalizedName } from "@/lib/display";
 
 export const Route = createFileRoute("/")({ component: Home });
 
@@ -23,6 +24,7 @@ function Home() {
   const setOrigin = useTripStore((s) => s.setOrigin);
   const live = useSharedLiveLocation();
   const [q, setQ] = useState("");
+  const language = i18n.resolvedLanguage;
 
   const nearby = useMemo(() => {
     const point = live.coords ?? { lat: 13.7378, lng: 100.5613 };
@@ -46,7 +48,7 @@ function Home() {
       <div>
         <p className="text-xs text-muted-foreground">{today}</p>
         <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">
-          {t("home.greeting")}, {profile.displayName}
+          {t("home.greeting")}, {profile.isAuthenticated ? profile.displayName : t("common.guest")}
         </h1>
         <p className="text-muted-foreground mt-1">{t("home.prompt")}</p>
       </div>
@@ -74,32 +76,44 @@ function Home() {
       {live.status !== "idle" && (
         <Card className="p-4 flex items-center gap-3">
           <div className="size-11 rounded-full bg-primary/10 grid place-items-center shrink-0">
-            <Radar className={`size-5 text-primary ${live.status === "watching" ? "animate-pulse" : ""}`} />
+            <Radar
+              className={`size-5 text-primary ${live.status === "watching" ? "animate-pulse" : ""}`}
+            />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">ตำแหน่งของคุณ</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              {t("location.title")}
+            </p>
             {live.status === "watching" && live.nearestStation ? (
               <>
                 <p className="font-semibold truncate">
                   {live.distanceMeters != null && live.distanceMeters <= 150
-                    ? `คุณน่าจะอยู่ที่สถานี ${live.nearestStation.nameTh}`
-                    : `สถานีที่ใกล้ที่สุดคือ ${live.nearestStation.nameTh}`}
-                  <span className="text-xs text-muted-foreground ml-1">({live.nearestStation.code})</span>
+                    ? t("location.likelyAt", {
+                        station: getLocalizedName(live.nearestStation, language),
+                      })
+                    : t("location.nearestStation", {
+                        station: getLocalizedName(live.nearestStation, language),
+                      })}
+                  <span className="text-xs text-muted-foreground ml-1">
+                    ({live.nearestStation.code})
+                  </span>
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  ระยะห่างประมาณ {Math.round(live.distanceMeters ?? 0)} ม.
+                  {t("location.distance", { distance: Math.round(live.distanceMeters ?? 0) })}
                 </p>
               </>
             ) : live.status === "denied" ? (
-              <p className="text-sm text-muted-foreground">ไม่สามารถเข้าถึงตำแหน่งได้ กรุณาอนุญาต Location ในเบราว์เซอร์</p>
+              <p className="text-sm text-muted-foreground">{t("location.denied")}</p>
             ) : live.status === "unsupported" ? (
-              <p className="text-sm text-muted-foreground">เบราว์เซอร์นี้ไม่รองรับการระบุตำแหน่ง</p>
+              <p className="text-sm text-muted-foreground">{t("location.unsupported")}</p>
             ) : (
-              <p className="text-sm text-muted-foreground">กำลังเตรียมข้อมูลตำแหน่งแบบ Real-time</p>
+              <p className="text-sm text-muted-foreground">{t("location.preparing")}</p>
             )}
           </div>
           {live.status === "watching" && (
-            <Button size="sm" variant="outline" onClick={live.stop}>หยุด</Button>
+            <Button size="sm" variant="outline" onClick={live.stop}>
+              {t("location.stop")}
+            </Button>
           )}
         </Card>
       )}
@@ -108,10 +122,15 @@ function Home() {
         <Card className="p-5 bg-primary text-primary-foreground border-0">
           <p className="text-xs uppercase tracking-widest opacity-80">{t("home.readyTicket")}</p>
           <p className="mt-1 text-xl font-semibold">
-            {getStation(ready.originStationId)?.nameTh} → {getStation(ready.destinationStationId)?.nameTh}
+            {getLocalizedName(getStation(ready.originStationId), language)} →{" "}
+            {getLocalizedName(getStation(ready.destinationStationId), language)}
           </p>
           <p className="text-xs opacity-80 mt-1">
-            {t("checkout.validUntil")}: {new Date(ready.validUntil).toLocaleTimeString(i18n.language, { hour: "2-digit", minute: "2-digit" })}
+            {t("checkout.validUntil")}:{" "}
+            {new Date(ready.validUntil).toLocaleTimeString(i18n.language, {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </p>
           <Button asChild variant="secondary" className="mt-3">
             <Link to="/ticket/$ticketId" params={{ ticketId: ready.id }}>
@@ -130,11 +149,23 @@ function Home() {
               <Card key={station.id} className="p-3 flex flex-col gap-1">
                 <div className="flex items-center gap-1.5">
                   <span className="size-2 rounded-full" style={{ background: line?.color }} />
-                  <span className="text-[10px] uppercase text-muted-foreground">{station.code}</span>
+                  <span className="text-[10px] uppercase text-muted-foreground">
+                    {station.code}
+                  </span>
                 </div>
-                <p className="font-semibold text-sm">{station.nameTh}</p>
-                <p className="text-xs text-muted-foreground">{Math.round(meters)} {t("common.m")}</p>
-                <Button size="sm" variant="outline" className="mt-1" onClick={() => { setOrigin(station.id); nav({ to: "/search" }); }}>
+                <p className="font-semibold text-sm">{getLocalizedName(station, language)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {Math.round(meters)} {t("common.m")}
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-1"
+                  onClick={() => {
+                    setOrigin(station.id);
+                    nav({ to: "/search" });
+                  }}
+                >
                   {t("search.setOrigin")}
                 </Button>
               </Card>
@@ -151,10 +182,19 @@ function Home() {
               const origin = getStation(trip.originStationId);
               const destination = getStation(trip.destinationStationId);
               return (
-                <Link key={trip.id} to="/plan" search={{ from: trip.originStationId, to: trip.destinationStationId }}>
+                <Link
+                  key={trip.id}
+                  to="/plan"
+                  search={{ from: trip.originStationId, to: trip.destinationStationId }}
+                >
                   <Card className="p-3 hover:bg-accent transition">
-                    <p className="text-sm font-medium">{trip.icon} {trip.nickname}</p>
-                    <p className="text-xs text-muted-foreground">{origin?.nameTh} → {destination?.nameTh}</p>
+                    <p className="text-sm font-medium">
+                      {trip.icon} {trip.nickname}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {getLocalizedName(origin, language)} →{" "}
+                      {getLocalizedName(destination, language)}
+                    </p>
                   </Card>
                 </Link>
               );

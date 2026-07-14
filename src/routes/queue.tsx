@@ -19,6 +19,7 @@ import { getStation } from "@/services/routeService";
 import { LINES } from "@/data/network";
 import type { LineId, QueueDemo } from "@/types/mrt";
 import { cn } from "@/lib/utils";
+import { getLocalizedName } from "@/lib/display";
 import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 
 export const Route = createFileRoute("/queue")({ component: QueuePage });
@@ -82,7 +83,7 @@ function QueuePage() {
           <option value="all">— {t("queue.filterLine")} —</option>
           {LINES.filter((l) => l.status === "operational").map((l) => (
             <option key={l.id} value={l.id}>
-              {i18n.language === "th" ? l.nameTh : l.nameEn}
+              {getLocalizedName(l, i18n.resolvedLanguage)}
             </option>
           ))}
         </select>
@@ -119,7 +120,9 @@ function QueuePage() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="size-3 rounded-full" style={{ background: line.color }} />
-                    <span className="font-semibold truncate">{st.nameTh}</span>
+                    <span className="font-semibold truncate">
+                      {getLocalizedName(st, i18n.resolvedLanguage)}
+                    </span>
                     <span className="text-xs text-muted-foreground">{st.code}</span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-3 items-center text-sm">

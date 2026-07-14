@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useLiveLocation, type LiveLocationState } from "@/hooks/useLiveLocation";
+import { useTranslation } from "react-i18next";
 
 const POLICY_ACCEPTED_KEY = "mrt_policy_accepted";
 const POLICY_DO_NOT_SHOW_KEY = "mrt_policy_do_not_show_again";
@@ -27,6 +28,7 @@ export function useSharedLiveLocation() {
 }
 
 export function LocationProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const live = useLiveLocation(false);
   const [mounted, setMounted] = useState(false);
   const [policyOpen, setPolicyOpen] = useState(false);
@@ -54,18 +56,18 @@ export function LocationProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (live.status === "watching" && gpsOpen) {
-      toast.success("เปิดตำแหน่งเรียบร้อย ระบบจะคำนวณสถานีที่ใกล้คุณแบบ Real-time");
+      toast.success(t("location.enabled"));
       setGpsOpen(false);
     }
-  }, [gpsOpen, live.status]);
+  }, [gpsOpen, live.status, t]);
 
   const locationMessage = useMemo(() => {
-    if (live.status === "unsupported") return "เบราว์เซอร์นี้ไม่รองรับการระบุตำแหน่ง";
-    if (live.status === "denied") return "ไม่สามารถเข้าถึงตำแหน่งได้ กรุณาอนุญาต Location ในเบราว์เซอร์";
-    if (live.status === "error") return live.error ?? "ไม่สามารถอ่านตำแหน่งได้ กรุณาลองอีกครั้ง";
-    if (live.status === "requesting") return "กำลังขอสิทธิ์ตำแหน่งจากเบราว์เซอร์...";
-    return "ระบบจะถามสิทธิ์ Location หลังจากคุณกดปุ่มเปิดตำแหน่งเท่านั้น";
-  }, [live.error, live.status]);
+    if (live.status === "unsupported") return t("location.unsupported");
+    if (live.status === "denied") return t("location.denied");
+    if (live.status === "error") return t("location.readError");
+    if (live.status === "requesting") return t("location.requesting");
+    return t("location.permissionHint");
+  }, [live.status, t]);
 
   const resolvePolicy = (accepted: boolean) => {
     if (typeof window !== "undefined") {
@@ -85,19 +87,21 @@ export function LocationProvider({ children }: { children: ReactNode }) {
 
       {mounted && (
         <>
-          <Dialog open={policyOpen} onOpenChange={(open) => {
-            if (!open) resolvePolicy(false);
-            else setPolicyOpen(true);
-          }}>
+          <Dialog
+            open={policyOpen}
+            onOpenChange={(open) => {
+              if (!open) resolvePolicy(false);
+              else setPolicyOpen(true);
+            }}
+          >
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <div className="mb-2 grid size-11 place-items-center rounded-full bg-primary/10 text-primary">
                   <ShieldCheck className="size-5" />
                 </div>
-                <DialogTitle>นโยบายและความเป็นส่วนตัว</DialogTitle>
+                <DialogTitle>{t("privacy.title")}</DialogTitle>
                 <DialogDescription className="leading-relaxed">
-                  เว็บไซต์นี้เป็นโปรเจกต์ต้นแบบ มีการจัดเก็บข้อมูลบัญชีในเครื่องของผู้ใช้
-                  และอาจใช้ตำแหน่งเพื่อค้นหาสถานีใกล้เคียง
+                  {t("privacy.description")}
                 </DialogDescription>
               </DialogHeader>
               <label className="flex items-start gap-3 rounded-lg border bg-muted/40 p-3 text-sm leading-relaxed">
@@ -106,13 +110,15 @@ export function LocationProvider({ children }: { children: ReactNode }) {
                   onCheckedChange={(checked) => setPolicyDontShowAgain(checked === true)}
                   className="mt-0.5"
                 />
-                <span>ไม่ต้องแสดงอีก</span>
+                <span>{t("privacy.doNotShowAgain")}</span>
               </label>
               <DialogFooter className="gap-2 sm:gap-2">
                 <Button asChild variant="outline">
-                  <Link to="/policy" onClick={() => resolvePolicy(false)}>อ่านนโยบาย</Link>
+                  <Link to="/policy" onClick={() => resolvePolicy(false)}>
+                    {t("privacy.readPolicy")}
+                  </Link>
                 </Button>
-                <Button onClick={() => resolvePolicy(true)}>ยอมรับ</Button>
+                <Button onClick={() => resolvePolicy(true)}>{t("privacy.accept")}</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -123,18 +129,20 @@ export function LocationProvider({ children }: { children: ReactNode }) {
                 <div className="mb-2 grid size-11 place-items-center rounded-full bg-primary/10 text-primary">
                   <MapPin className="size-5" />
                 </div>
-                <DialogTitle>เปิดตำแหน่งแบบ Real-time</DialogTitle>
+                <DialogTitle>{t("location.enableTitle")}</DialogTitle>
                 <DialogDescription className="leading-relaxed">
-                  เปิดตำแหน่งเพื่อค้นหาสถานี MRT ที่อยู่ใกล้คุณแบบ Real-time
+                  {t("location.enableDescription")}
                 </DialogDescription>
               </DialogHeader>
               <div className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
                 {locationMessage}
               </div>
               <DialogFooter className="gap-2 sm:gap-2">
-                <Button variant="outline" onClick={() => setGpsOpen(false)}>ข้าม</Button>
+                <Button variant="outline" onClick={() => setGpsOpen(false)}>
+                  {t("tour.skip")}
+                </Button>
                 <Button onClick={live.start} disabled={live.status === "requesting"}>
-                  เปิดตำแหน่ง
+                  {t("location.enable")}
                 </Button>
               </DialogFooter>
             </DialogContent>

@@ -10,7 +10,10 @@ import { Card } from "@/components/ui/card";
 
 export const Route = createFileRoute("/map")({ component: MapPage });
 
-class MapErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+class MapErrorBoundary extends Component<
+  { children: ReactNode; title: string; description: string },
+  { error: Error | null }
+> {
   state: { error: Error | null } = { error: null };
 
   static getDerivedStateFromError(error: Error) {
@@ -27,8 +30,8 @@ class MapErrorBoundary extends Component<{ children: ReactNode }, { error: Error
       <div className="p-4 lg:p-8">
         <Card className="p-4">
           <ErrorState
-            title="แผนที่ MRT แสดงผลไม่สำเร็จ"
-            description="ระบบแผนที่เกิดข้อผิดพลาด แต่หน้าเว็บยังใช้งานต่อได้ โปรดตรวจสอบว่าเบราว์เซอร์รองรับ WebGL และลองโหลดหน้าใหม่อีกครั้ง"
+            title={this.props.title}
+            description={this.props.description}
             onRetry={() => this.setState({ error: null })}
           />
         </Card>
@@ -53,7 +56,10 @@ function MapPage() {
         <PageHeader title={t("map.title")} />
       </div>
       <ClientOnly fallback={<div className="p-8 text-muted-foreground">{t("common.loading")}</div>}>
-        <MapErrorBoundary>
+        <MapErrorBoundary
+          title={t("map.renderErrorTitle")}
+          description={t("map.renderErrorDescription")}
+        >
           <InteractiveMrtMap routeStations={stations} />
         </MapErrorBoundary>
       </ClientOnly>

@@ -100,7 +100,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const handleLogout = () => {
     storage.logout();
-    toast.success("ออกจากระบบแล้ว");
+    toast.success(t("common.signedOut"));
   };
 
   return (
@@ -110,7 +110,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <DemoBanner />
         {realtimeStatus === "degraded" && (
           <div className="fixed right-3 top-3 z-[900] rounded-full border border-warning/40 bg-warning/15 px-3 py-1 text-xs font-medium shadow-lg backdrop-blur">
-            เชื่อมต่อ realtime ไม่สำเร็จ ใช้ข้อมูลจำลอง
+            {t("demo.realtimeFallback")}
           </div>
         )}
         <div className="flex flex-1 min-h-0">
@@ -190,7 +190,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               {profile.isAuthenticated ? (
                 <>
                   <div className="text-xs text-muted-foreground px-2 truncate">
-                    {profile.displayName} · ฿{(profile.walletBalance ?? 0).toLocaleString()}
+                    {profile.isAuthenticated ? profile.displayName : t("common.guest")} · ฿
+                    {(profile.walletBalance ?? 0).toLocaleString()}
                   </div>
                   <Button
                     variant="ghost"

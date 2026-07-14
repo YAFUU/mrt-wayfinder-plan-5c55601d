@@ -1,127 +1,351 @@
 {
-  "app": { "name": "MRT QuickPass", "tagline": "Buy tickets ahead, plan your route, skip the queue" },
+  "app": {
+    "name": "MRT QuickPass",
+    "tagline": "Buy tickets ahead, plan your route, skip the queue"
+  },
   "demo": {
     "banner": "Demo Mode — data is stored on this device only",
     "qrTicket": "Demo QR Ticket: cannot be used at real MRT gates until connected to authorized systems.",
     "payment": "Demo Mode: no real charge.",
     "queue": "Queue data is simulated for the prototype",
     "fareEstimate": "Estimated fare",
-    "notReal": "This app is not connected to the real MRT ticketing, gate, or payment systems of MRTA/BEM."
+    "notReal": "This app is not connected to the real MRT ticketing, gate, or payment systems of MRTA/BEM.",
+    "realtimeFallback": "Real-time connection failed. Using simulated data."
   },
   "nav": {
-    "home": "Home", "search": "Search", "map": "MRT Map", "tickets": "My Tickets",
-    "queue": "Queues", "trips": "Saved Trips", "family": "Group Ticket",
-    "help": "Help", "profile": "Profile", "settings": "Settings",
-    "accessibility": "Accessibility", "adminDemo": "Admin Demo", "dataSources": "Data Sources",
-    "wallet": "Wallet", "guide": "Guide", "policy": "Policy", "login": "Sign in", "logout": "Sign out"
+    "home": "Home",
+    "search": "Search",
+    "map": "MRT Map",
+    "tickets": "My Tickets",
+    "queue": "Queues",
+    "trips": "Saved Trips",
+    "family": "Group Ticket",
+    "help": "Help",
+    "profile": "Profile",
+    "settings": "Settings",
+    "accessibility": "Accessibility",
+    "adminDemo": "Admin Demo",
+    "dataSources": "Data Sources",
+    "wallet": "Wallet",
+    "guide": "Guide",
+    "policy": "Policy",
+    "login": "Sign in",
+    "logout": "Sign out"
   },
   "common": {
-    "search": "Search", "cancel": "Cancel", "confirm": "Confirm", "close": "Close",
-    "back": "Back", "next": "Next", "previous": "Previous", "loading": "Loading…",
-    "retry": "Retry", "save": "Save", "delete": "Delete", "edit": "Edit",
-    "open": "Open", "share": "Share", "language": "Language",
-    "th": "Thai", "en": "English", "min": "min", "km": "km", "m": "m", "baht": "THB",
-    "empty": "No data", "error": "Something went wrong",
-    "poweredBy": "© OpenStreetMap contributors"
+    "search": "Search",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "loading": "Loading…",
+    "retry": "Retry",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "open": "Open",
+    "share": "Share",
+    "language": "Language",
+    "th": "Thai",
+    "en": "English",
+    "min": "min",
+    "km": "km",
+    "m": "m",
+    "baht": "THB",
+    "empty": "No data",
+    "error": "Something went wrong",
+    "signedOut": "Signed out",
+    "poweredBy": "© OpenStreetMap contributors",
+    "guest": "Guest"
   },
   "home": {
-    "greeting": "Hi", "prompt": "Where would you like to go today?",
-    "plan": "Plan your trip", "searchPlaceholder": "Search MRT stations or places",
-    "useMyLocation": "Use my location", "findRoute": "Find route",
-    "nearbyStations": "Stations near you", "readyTicket": "Your ticket is ready",
-    "openTicket": "Open QR Ticket", "quickTrips": "Repeat a trip",
-    "queueAlert": "Ticket queues today", "seeAllQueue": "See all queues",
+    "greeting": "Hi",
+    "prompt": "Where would you like to go today?",
+    "plan": "Plan your trip",
+    "searchPlaceholder": "Search MRT stations or places",
+    "useMyLocation": "Use my location",
+    "findRoute": "Find route",
+    "nearbyStations": "Stations near you",
+    "readyTicket": "Your ticket is ready",
+    "openTicket": "Open QR Ticket",
+    "quickTrips": "Repeat a trip",
+    "queueAlert": "Ticket queues today",
+    "seeAllQueue": "See all queues",
     "noLocation": "Location not granted — showing popular stations instead"
   },
+  "location": {
+    "title": "Your location",
+    "realtimeTitle": "Real-time location",
+    "shortLabel": "Location",
+    "likelyAt": "You are likely at {{station}} station",
+    "nearestStation": "Nearest station: {{station}}",
+    "currentNear": "You are currently near: {{station}}",
+    "distance": "Approximately {{distance}} m away",
+    "updated": "Last updated: {{time}}",
+    "denied": "Location access is unavailable. Please allow location access in your browser.",
+    "unsupported": "This browser does not support location services.",
+    "requesting": "Requesting location permission…",
+    "preparing": "Preparing real-time location data…",
+    "reading": "Reading your location…",
+    "stop": "Stop",
+    "stopTracking": "Stop tracking location",
+    "hideRealtime": "Hide real-time location",
+    "showRealtime": "Show real-time location",
+    "enabled": "Location enabled. Nearby stations will now update in real time.",
+    "readError": "Unable to read your location. Please try again.",
+    "permissionHint": "Location permission is requested only after you press Enable location.",
+    "enableTitle": "Enable real-time location",
+    "enableDescription": "Enable location to find nearby MRT stations in real time.",
+    "enable": "Enable location"
+  },
+  "privacy": {
+    "title": "Privacy and data policy",
+    "description": "This prototype stores account data on this device and may use your location to find nearby stations.",
+    "doNotShowAgain": "Do not show again",
+    "readPolicy": "Read policy",
+    "accept": "Accept"
+  },
+  "tour": {
+    "skip": "Skip",
+    "fullGuide": "View full guide",
+    "start": "Get started",
+    "slides": [
+      {
+        "title": "Search and plan your trip",
+        "description": "Enter a station or place and the app will suggest the fastest MRT route."
+      },
+      {
+        "title": "Top up your wallet",
+        "description": "Add demo funds once and use them to pay fares without entering details again."
+      },
+      {
+        "title": "Real-time location",
+        "description": "See your nearest station and live prototype crowd information."
+      },
+      {
+        "title": "Enter with RFID",
+        "description": "Choose your origin and destination, pay first, then use the demo RFID flow at the selected stations."
+      }
+    ]
+  },
   "search": {
-    "title": "Find destination", "placeholder": "Search MRT stations or places",
-    "sectionStations": "MRT Stations", "sectionPlaces": "Places",
-    "sectionRecent": "Recent searches", "sectionSuggested": "Suggested places",
+    "title": "Find destination",
+    "placeholder": "Search MRT stations or places",
+    "sectionStations": "MRT Stations",
+    "sectionPlaces": "Places",
+    "sectionRecent": "Recent searches",
+    "sectionSuggested": "Suggested places",
     "empty": "No results. Try a different query.",
-    "setOrigin": "Set as origin", "setDestination": "Set as destination"
+    "setOrigin": "Set as origin",
+    "setDestination": "Set as destination",
+    "nearStation": "near {{station}}",
+    "walkDistance": "{{distance}} m walk"
   },
   "map": {
-    "title": "MRT Map", "filters": "Lines", "showExits": "Show exits",
-    "showPlaces": "Show places", "showFuture": "Show future network",
-    "reset": "Reset map", "locate": "My location", "legend": "Legend",
-    "setOrigin": "Set as origin", "setDestination": "Set as destination",
-    "future": "Future / under construction", "origin": "Origin", "destination": "Destination"
+    "title": "MRT Map",
+    "filters": "Lines",
+    "showExits": "Show exits",
+    "showPlaces": "Show places",
+    "showFuture": "Show future network",
+    "reset": "Reset map",
+    "locate": "My location",
+    "legend": "Legend",
+    "setOrigin": "Set as origin",
+    "setDestination": "Set as destination",
+    "future": "Future / under construction",
+    "origin": "Origin",
+    "destination": "Destination",
+    "controlsTitle": "Map options",
+    "controlsSubtitle": "Rail lines and map mode",
+    "actualMap": "Geographic map",
+    "diagram": "Diagram",
+    "lines": "Lines",
+    "hideLineOptions": "Hide rail line options",
+    "showLineOptions": "Show rail line options",
+    "baseMapIncomplete": "Base map did not load completely",
+    "interchange": "Interchange station",
+    "tileLoadError": "The map background could not load, but MRT lines are still available. Check your connection or tile provider.",
+    "renderErrorTitle": "MRT map could not be displayed",
+    "renderErrorDescription": "The map encountered an error, but the rest of the app remains available. Check that your browser supports WebGL and reload the page.",
+    "legendTitle": "Legend",
+    "expandLegend": "Expand map legend",
+    "collapseLegend": "Collapse map legend",
+    "realtimeUserLocation": "Real-time user location"
   },
   "route": {
-    "title": "Route", "fastest": "Fastest", "fewestTransfers": "Fewest transfers",
-    "leastWalking": "Least walking", "stations": "stations", "transfers": "transfers",
-    "time": "Time", "fare": "Fare", "buyTicket": "Buy QR Ticket",
-    "savedTrip": "Save trip", "shareRoute": "Share", "viewOnMap": "View on map",
-    "swap": "Swap origin/destination", "noRoute": "No suitable route found",
+    "title": "Route",
+    "fastest": "Fastest",
+    "fewestTransfers": "Fewest transfers",
+    "leastWalking": "Least walking",
+    "stations": "stations",
+    "transfers": "transfers",
+    "time": "Time",
+    "fare": "Fare",
+    "buyTicket": "Buy QR Ticket",
+    "savedTrip": "Save trip",
+    "shareRoute": "Share",
+    "viewOnMap": "View on map",
+    "swap": "Swap origin/destination",
+    "noRoute": "No suitable route found",
     "fareUnavailable": "No verified fare data available",
-    "changeAt": "Transfer at", "operatorNote": "Fare may be paid separately by operator",
-    "selectOD": "Please select origin and destination"
+    "changeAt": "Transfer at",
+    "operatorNote": "Fare may be paid separately by operator",
+    "selectOD": "Please select origin and destination",
+    "timeline": "Timeline",
+    "saved": "Saved trip successfully",
+    "linkCopied": "Link copied",
+    "nearbyDestination": "Places near your destination"
   },
   "checkout": {
-    "title": "Checkout", "origin": "Origin", "destination": "Destination",
-    "passengers": "Passengers", "farePerPassenger": "Fare per passenger",
-    "fee": "Fee", "total": "Total", "validUntil": "Valid until",
+    "title": "Checkout",
+    "origin": "Origin",
+    "destination": "Destination",
+    "passengers": "Passengers",
+    "farePerPassenger": "Fare per passenger",
+    "fee": "Fee",
+    "total": "Total",
+    "validUntil": "Valid until",
     "method": "Payment method",
-    "methods": { "promptpay": "PromptPay QR", "card": "Credit/Debit card", "banking": "Mobile Banking", "wallet": "e-Wallet" },
-    "pay": "Confirm payment (Demo)", "simulateFail": "Simulate failed payment",
-    "processing": "Processing payment…", "success": "Payment successful",
-    "failed": "Payment failed", "retry": "Retry payment"
+    "methods": {
+      "promptpay": "PromptPay QR",
+      "card": "Credit/Debit card",
+      "banking": "Mobile Banking",
+      "wallet": "e-Wallet"
+    },
+    "pay": "Confirm payment (Demo)",
+    "simulateFail": "Simulate failed payment",
+    "processing": "Processing payment…",
+    "success": "Payment successful",
+    "failed": "Payment failed",
+    "retry": "Retry payment",
+    "primaryPassenger": "Primary passenger",
+    "passenger": "Passenger {{number}}",
+    "passengerFallback": "Passenger"
   },
   "ticket": {
-    "readyToEnter": "Ready to enter", "inJourney": "In journey",
-    "completed": "Completed", "expired": "Expired", "cancelled": "Cancelled",
-    "paymentPending": "Payment pending", "ticketId": "Ticket ID",
-    "scanIn": "Simulate Scan In", "scanOut": "Simulate Scan Out",
-    "receipt": "View receipt", "brightness": "Boost brightness",
-    "howTo": "How to use", "help": "Get help",
-    "tokenRotate": "Code rotates in", "myTickets": "My tickets",
-    "emptyTitle": "No tickets yet", "emptyDesc": "Plan a trip and create your Demo QR Ticket here.",
-    "filterAll": "All", "notFound": "Ticket not found"
+    "readyToEnter": "Ready to enter",
+    "inJourney": "In journey",
+    "completed": "Completed",
+    "expired": "Expired",
+    "cancelled": "Cancelled",
+    "paymentPending": "Payment pending",
+    "ticketId": "Ticket ID",
+    "scanIn": "Simulate Scan In",
+    "scanOut": "Simulate Scan Out",
+    "receipt": "View receipt",
+    "brightness": "Boost brightness",
+    "howTo": "How to use",
+    "help": "Get help",
+    "tokenRotate": "Code rotates in",
+    "myTickets": "My tickets",
+    "emptyTitle": "No tickets yet",
+    "emptyDesc": "Plan a trip and create your Demo QR Ticket here.",
+    "filterAll": "All",
+    "notFound": "Ticket not found",
+    "rfidTitle": "RFID ticket · valid only at the selected stations",
+    "rfidOriginOnly": "This RFID ticket can only be used at {{station}} station.",
+    "rfidEntered": "RFID entry at {{station}} completed (Demo).",
+    "rfidDestinationOnly": "You can only exit at the destination station, {{station}}.",
+    "rfidExited": "RFID exit at {{station}} completed (Demo).",
+    "readyToTapIn": "Ready to tap in at {{station}}",
+    "walkToOrigin": "Walk to {{station}} to enter ({{distance}} m away)",
+    "readyToTapOut": "Ready to tap out at {{station}}",
+    "walkToDestination": "Exit only at {{station}} ({{distance}} m away)",
+    "enableLocationHint": "Enable location so the app can confirm you are at the correct station.",
+    "enableGps": "Enable GPS",
+    "tapInRfid": "Tap in (RFID)",
+    "tapOutRfid": "Tap out (RFID)",
+    "fullscreenEnabled": "Fullscreen mode enabled"
   },
   "queue": {
-    "title": "Ticket machine queues", "estimatedWait": "Approx. wait",
-    "activeMachines": "Active machines", "of": "of",
-    "trend": "Trend", "trendUp": "Getting busier", "trendDown": "Easing",
-    "trendStable": "Steady", "low": "Low", "medium": "Medium", "high": "Busy", "very_high": "Very busy",
-    "buy": "Buy via QuickPass", "updated": "Last updated",
-    "filterLine": "Filter by line", "filterStatus": "Filter by status",
+    "title": "Ticket machine queues",
+    "estimatedWait": "Approx. wait",
+    "activeMachines": "Active machines",
+    "of": "of",
+    "trend": "Trend",
+    "trendUp": "Getting busier",
+    "trendDown": "Easing",
+    "trendStable": "Steady",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "Busy",
+    "very_high": "Very busy",
+    "buy": "Buy via QuickPass",
+    "updated": "Last updated",
+    "filterLine": "Filter by line",
+    "filterStatus": "Filter by status",
     "chartTitle": "Wait-time trend (min)"
   },
   "trips": {
-    "title": "Saved trips", "empty": "No saved trips yet.",
-    "add": "Save new trip", "repeat": "Repeat this trip",
-    "nickname": "Nickname", "icon": "Icon"
+    "title": "Saved trips",
+    "empty": "No saved trips yet.",
+    "add": "Save new trip",
+    "repeat": "Repeat this trip",
+    "nickname": "Nickname",
+    "icon": "Icon",
+    "removed": "Saved trip removed"
   },
   "family": {
-    "title": "Group / Family Ticket", "passengers": "Passenger count",
-    "passengerName": "Passenger name", "add": "Add passenger", "remove": "Remove",
+    "title": "Group / Family Ticket",
+    "passengers": "Passenger count",
+    "passengerName": "Passenger name",
+    "add": "Add passenger",
+    "remove": "Remove",
     "totalNote": "Each passenger receives a separate QR Ticket.",
     "entryMode": "Group entry mode",
     "warning": "Each passenger must scan through the gate separately."
   },
   "help": {
-    "title": "Help & Support", "faq": "Frequently asked",
-    "contact": "Contact staff (Demo)", "issueType": "Issue type",
-    "message": "Details", "submit": "Send request",
+    "title": "Help & Support",
+    "faq": "Frequently asked",
+    "contact": "Contact staff (Demo)",
+    "issueType": "Issue type",
+    "message": "Details",
+    "submit": "Send request",
     "submitted": "Request received. Reference",
     "myRequests": "My requests",
+    "completeFields": "Please complete all required fields.",
+    "issueOptions": {
+      "qrScan": "QR code does not scan",
+      "expired": "Ticket expired",
+      "wrongDestination": "Wrong destination",
+      "payment": "Payment issue",
+      "other": "Other"
+    },
     "faqs": {
-      "q1": "QR won't scan?", "a1": "In demo mode, make sure the code hasn't expired and press Simulate Scan In from the Ticket page.",
-      "q2": "How to use an expired ticket?", "a2": "Expired tickets cannot be scanned in. Please buy a new one.",
-      "q3": "Wrong destination?", "a3": "If not yet scanned in, you can cancel and buy again (demo mode).",
-      "q4": "Can this open real MRT gates?", "a4": "Not yet. This is a Demo QR Ticket that will go live once the app is authorized to integrate with MRTA/BEM."
+      "q1": "QR won't scan?",
+      "a1": "In demo mode, make sure the code hasn't expired and press Simulate Scan In from the Ticket page.",
+      "q2": "How to use an expired ticket?",
+      "a2": "Expired tickets cannot be scanned in. Please buy a new one.",
+      "q3": "Wrong destination?",
+      "a3": "If not yet scanned in, you can cancel and buy again (demo mode).",
+      "q4": "Can this open real MRT gates?",
+      "a4": "Not yet. This is a Demo QR Ticket that will go live once the app is authorized to integrate with MRTA/BEM."
     }
   },
   "accessibility": {
-    "title": "Accessibility", "fontSize": "Font size",
-    "normal": "Normal", "large": "Large", "xlarge": "Extra large",
-    "highContrast": "High contrast", "reduceMotion": "Reduce motion",
-    "autoBrightness": "Boost brightness automatically on QR", "language": "Language"
+    "title": "Accessibility",
+    "fontSize": "Font size",
+    "normal": "Normal",
+    "large": "Large",
+    "xlarge": "Extra large",
+    "highContrast": "High contrast",
+    "reduceMotion": "Reduce motion",
+    "autoBrightness": "Boost brightness automatically on QR",
+    "language": "Language"
   },
   "data": {
-    "title": "Data sources", "sourceName": "Source", "type": "Type",
-    "lastUpdated": "Last updated", "confidence": "Confidence",
-    "high": "High", "medium": "Medium", "low": "Low", "download": "Download JSON"
+    "title": "Data sources",
+    "sourceName": "Source",
+    "type": "Type",
+    "lastUpdated": "Last updated",
+    "confidence": "Confidence",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "download": "Download JSON"
   },
   "admin": {
     "title": "Admin Demo Dashboard",
@@ -129,10 +353,168 @@
     "reset": "Reset demo data"
   },
   "exit": {
-    "recommended": "Suggested exit", "walk": "Walk approx.",
-    "elevator": "Elevator available", "ramp": "Ramp available",
+    "recommended": "Suggested exit",
+    "walk": "Walk approx.",
+    "elevator": "Elevator available",
+    "ramp": "Ramp available",
     "unavailable": "No verified exit data available",
-    "openMap": "Open on map", "confidence": "Confidence"
+    "openMap": "Open on map",
+    "confidence": "Confidence"
   },
-  "notFound": { "title": "Page not found", "desc": "The link you opened may be invalid or has moved.", "home": "Go home" }
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Display name",
+    "confirmPassword": "Confirm password",
+    "privacyPolicy": "Privacy policy",
+    "privacyAndTerms": "privacy policy and terms of use",
+    "policyAndTerms": "policy and terms",
+    "errors": {
+      "emailPasswordRequired": "Please enter your email and password.",
+      "nameRequired": "Please enter your name.",
+      "emailRequired": "Please enter your email.",
+      "passwordLength": "Password must be at least 6 characters.",
+      "passwordMismatch": "Passwords do not match.",
+      "policyRequired": "Please accept the privacy policy and terms of use.",
+      "loginFailed": "Incorrect email or password.",
+      "registerFailed": "Unable to create the account. This email may already be in use.",
+      "accountNotFound": "Account not found.",
+      "resetFailed": "Unable to reset the password."
+    },
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Sign in to keep your wallet and tickets with your account.",
+      "forgotPassword": "Forgot password?",
+      "busy": "Signing in…",
+      "action": "Sign in",
+      "success": "Signed in successfully.",
+      "noAccount": "Don't have an account?",
+      "continueNotice": "By continuing, you acknowledge the",
+      "demoDisclaimer": "Accounts are stored on this device for demonstration only."
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "Create an account to use the wallet and track your trips.",
+      "passwordLabel": "Password (at least 6 characters)",
+      "acceptPrefix": "I accept the",
+      "busy": "Creating account…",
+      "action": "Create account",
+      "success": "Account created successfully.",
+      "hasAccount": "Already have an account?",
+      "readMore": "Read more in the",
+      "demoDisclaimer": "Data is stored on this device only (Demo mode)."
+    },
+    "forgot": {
+      "title": "Forgot password",
+      "subtitle": "Reset the password for a demo account stored on this device.",
+      "checkAccount": "Check account",
+      "accountFound": "Account found:",
+      "newPassword": "New password",
+      "confirmNewPassword": "Confirm new password",
+      "action": "Reset password",
+      "success": "Password reset successfully.",
+      "remembered": "Remembered your password?",
+      "demoDisclaimer": "This feature resets demo accounts stored on this device only. It does not send a real password-reset email."
+    }
+  },
+  "wallet": {
+    "title": "Wallet",
+    "subtitle": "Top up in advance for faster fare payment.",
+    "loginRequired": "Sign in required",
+    "loginDescription": "Sign in before topping up or using the wallet.",
+    "balance": "Balance",
+    "topUp": "Top up",
+    "otherAmount": "Other amount (THB)",
+    "topUpBusy": "Topping up…",
+    "topUpAmount": "Top up ฿{{amount}}",
+    "topUpSuccess": "Added ฿{{amount}} to the wallet.",
+    "history": "Wallet history",
+    "noTransactions": "No transactions yet.",
+    "balanceAfter": "Balance ฿{{amount}}",
+    "demoDisclaimer": "Demo top-ups do not charge real money.",
+    "errors": {
+      "selectAmount": "Please select an amount.",
+      "maximum": "The maximum top-up is ฿50,000 per transaction."
+    },
+    "transaction": {
+      "topup": "Top up",
+      "purchase": "Fare payment",
+      "refund": "Refund"
+    }
+  },
+  "guide": {
+    "title": "How to use MRT QuickPass",
+    "subtitle": "Get familiar with MRT QuickPass in a few minutes.",
+    "register": "Start by creating an account",
+    "continue": "Continue to the app",
+    "steps": {
+      "1": {
+        "title": "1. Create an account / Sign in",
+        "description": "Create an account to save your wallet, trip history, and tickets."
+      },
+      "2": {
+        "title": "2. Top up your wallet",
+        "description": "Add demo credit in advance so you can pay fares without entering payment details each time."
+      },
+      "3": {
+        "title": "3. Search and plan a route",
+        "description": "Search by station or place to see a recommended MRT route and fare."
+      },
+      "4": {
+        "title": "4. Use real-time location",
+        "description": "The Home page shows your nearest station to make choosing an origin easier."
+      },
+      "5": {
+        "title": "5. Check crowd levels",
+        "description": "Each station shows demo crowd levels and estimated waiting times."
+      },
+      "6": {
+        "title": "6. Pay with the wallet",
+        "description": "Choose e-Wallet at checkout to deduct the fare from your demo balance."
+      },
+      "7": {
+        "title": "7. Receive an RFID demo ticket",
+        "description": "After payment, the app issues an RFID demo ticket shown as a QR code and reference number."
+      },
+      "8": {
+        "title": "8. Enter and exit at selected stations",
+        "description": "The demo ticket is valid only for the selected origin and destination."
+      }
+    }
+  },
+  "policy": {
+    "title": "Privacy policy",
+    "subtitle": "How MRT QuickPass stores data, uses location, and operates as a prototype.",
+    "backHome": "Back to Home",
+    "demoTitle": "This website is a Demo / Prototype",
+    "demoDescription": "MRT QuickPass is not connected to real MRTA/BEM gates, ticketing, payment systems, or official databases. All information is provided only to test the user experience and design.",
+    "disclaimer": "Travel, map, and station information in this prototype may be incomplete or differ from real-time conditions.",
+    "sections": {
+      "1": {
+        "title": "Data stored",
+        "body": "MRT QuickPass is a prototype. Demo account, ticket, wallet, and preference data is stored only on the user's device through localStorage."
+      },
+      "2": {
+        "title": "Real-time location",
+        "body": "Your location is used only to estimate the nearest MRT station. Location tracking starts after you approve it and depends on browser permission."
+      },
+      "3": {
+        "title": "Demo account storage",
+        "body": "Accounts and passwords are demo data stored on this device, not real MRTA/BEM accounts. Do not use a password from another service."
+      },
+      "4": {
+        "title": "Transit data limitations",
+        "body": "Station, route, fare, queue, and location data may not be official or truly real time. Check the operator's official information before travelling."
+      },
+      "5": {
+        "title": "Terms of use",
+        "body": "This app demonstrates a concept and user experience only. Do not use its tickets or information for real travel or payment."
+      }
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "desc": "The link you opened may be invalid or has moved.",
+    "home": "Go home"
+  }
 }
