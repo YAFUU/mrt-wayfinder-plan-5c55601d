@@ -73,6 +73,7 @@ const DEFAULT_VISIBLE: Record<LineId, boolean> = {
 const PANEL_STORAGE_KEYS = {
   line: "mrt_map_line_panel_collapsed",
   realtime: "mrt_map_realtime_panel_collapsed",
+  legend: "mrt_map_legend_panel_collapsed",
 } as const;
 
 const LABEL_PLACEMENTS = [
@@ -232,9 +233,7 @@ function pointFeature(
   const primary = lang.startsWith("en")
     ? station.nameEn || station.nameTh || station.code
     : station.nameTh || station.nameEn || station.code;
-  const secondary = lang.startsWith("en")
-    ? station.nameTh || ""
-    : station.nameEn || "";
+  const secondary = lang.startsWith("en") ? station.nameTh || "" : station.nameEn || "";
   return {
     type: "Feature",
     properties: {
@@ -255,7 +254,6 @@ function pointFeature(
     geometry: { type: "Point", coordinates: lngLatFor(station, viewMode) },
   };
 }
-
 
 function singlePointCollection(
   station: MrtMapStation | null | undefined,
@@ -812,6 +810,9 @@ export function InteractiveMrtMap({
   const [isRealtimePanelCollapsed, setIsRealtimePanelCollapsed] = useState(() =>
     readCollapsedPreference(PANEL_STORAGE_KEYS.realtime),
   );
+  const [isLegendCollapsed, setIsLegendCollapsed] = useState(() =>
+    readCollapsedPreference(PANEL_STORAGE_KEYS.legend),
+  );
 
   const routeSet = useMemo(() => new Set(routeStations), [routeStations]);
   const nearestStationId = live.nearestStation?.id;
@@ -828,6 +829,10 @@ export function InteractiveMrtMap({
   useEffect(() => {
     writeCollapsedPreference(PANEL_STORAGE_KEYS.realtime, isRealtimePanelCollapsed);
   }, [isRealtimePanelCollapsed]);
+
+  useEffect(() => {
+    writeCollapsedPreference(PANEL_STORAGE_KEYS.legend, isLegendCollapsed);
+  }, [isLegendCollapsed]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -980,7 +985,17 @@ export function InteractiveMrtMap({
       console.log("[MRT map] rendered lines:", lineData.features.length);
       console.log("[MRT map] rendered stations:", stationData.features.length);
     }
-  }, [nearestStationId, ready, routeSet, routeStations, selected, viewMode, visible, zoom, i18n.language]);
+  }, [
+    nearestStationId,
+    ready,
+    routeSet,
+    routeStations,
+    selected,
+    viewMode,
+    visible,
+    zoom,
+    i18n.language,
+  ]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -1280,43 +1295,79 @@ export function InteractiveMrtMap({
         </div>
       )}
 
-      <Card className="absolute bottom-3 right-3 z-[390] hidden w-72 border-white/90 bg-white/95 p-3 shadow-xl shadow-slate-900/10 backdrop-blur md:block">
-        <div className="mb-2 flex items-center gap-2">
-          <Navigation className="size-4 text-primary" />
-          <div>
-            <p className="text-sm font-bold">สัญลักษณ์ Legend</p>
-            <p className="text-[10px] text-muted-foreground">MapLibre schematic overlay</p>
+      <Card
+        className={cn(
+          "absolute bottom-3 right-3 z-[390] hidden border-white/90 bg-white/95 p-3 shadow-xl shadow-slate-900/10 backdrop-blur transition-[width] duration-300 ease-out motion-reduce:transition-none md:block",
+          isLegendCollapsed ? "w-56" : "w-72",
+        )}
+      >
+        <div className={cn("flex items-center gap-2 pr-9", !isLegendCollapsed && "mb-2")}>
+          <Navigation className="size-4 shrink-0 text-primary" />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold">{isEn ? "Legend" : "สัญลักษณ์ Legend"}</p>
+            {!isLegendCollapsed && (
+              <p className="truncate text-[10px] text-muted-foreground">
+                MapLibre schematic overlay
+              </p>
+            )}
           </div>
         </div>
-        <div className="grid gap-2 text-xs">
-          {LINES.map((line) => (
-            <div key={line.id} className="flex items-center gap-2">
-              <span className="relative h-4 w-12">
-                <span
-                  className="absolute left-0 top-1/2 h-2 w-12 -translate-y-1/2 rounded-full"
-                  style={{ background: colorFor(line.id) }}
-                />
-                <span
-                  className="absolute left-1/2 top-1/2 grid size-4 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 bg-white text-[6px] font-bold"
-                  style={{ borderColor: colorFor(line.id), color: "#0B2344" }}
-                >
-                  {line.code.replace("MRT-", "")}
+
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="absolute right-2 top-2 size-8 rounded-full text-primary hover:bg-primary/10 focus-visible:ring-primary/30"
+          onClick={() => setIsLegendCollapsed((current) => !current)}
+          aria-expanded={!isLegendCollapsed}
+          aria-label={
+            isEn
+              ? isLegendCollapsed
+                ? "Expand map legend"
+                : "Collapse map legend"
+              : isLegendCollapsed
+                ? "แสดงสัญลักษณ์แผนที่"
+                : "ซ่อนสัญลักษณ์แผนที่"
+          }
+        >
+          {isLegendCollapsed ? (
+            <ChevronLeft className="size-4" />
+          ) : (
+            <ChevronRight className="size-4" />
+          )}
+        </Button>
+
+        {!isLegendCollapsed && (
+          <div className="grid gap-2 text-xs">
+            {LINES.map((line) => (
+              <div key={line.id} className="flex items-center gap-2">
+                <span className="relative h-4 w-12">
+                  <span
+                    className="absolute left-0 top-1/2 h-2 w-12 -translate-y-1/2 rounded-full"
+                    style={{ background: colorFor(line.id) }}
+                  />
+                  <span
+                    className="absolute left-1/2 top-1/2 grid size-4 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 bg-white text-[6px] font-bold"
+                    style={{ borderColor: colorFor(line.id), color: "#0B2344" }}
+                  >
+                    {line.code.replace("MRT-", "")}
+                  </span>
                 </span>
+                <span className="min-w-0 flex-1 truncate">{isEn ? line.nameEn : line.nameTh}</span>
+              </div>
+            ))}
+            <div className="mt-1 flex items-center gap-2 border-t pt-2">
+              <span className="grid size-5 place-items-center rounded-full border-2 border-slate-900 bg-white text-[8px] font-bold">
+                INT
               </span>
-              <span className="min-w-0 flex-1 truncate">{isEn ? line.nameEn : line.nameTh}</span>
+              <span>{isEn ? "Interchange station" : "สถานีเชื่อมต่อ"}</span>
             </div>
-          ))}
-          <div className="mt-1 flex items-center gap-2 border-t pt-2">
-            <span className="grid size-5 place-items-center rounded-full border-2 border-slate-900 bg-white text-[8px] font-bold">
-              INT
-            </span>
-            <span>สถานีเชื่อมต่อ</span>
+            <div className="flex items-center gap-2">
+              <Radio className="size-5 text-blue-600" />
+              <span>{isEn ? "Real-time user location" : "ตำแหน่งผู้ใช้แบบ Real-time"}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Radio className="size-5 text-blue-600" />
-            <span>ตำแหน่งผู้ใช้แบบ Real-time</span>
-          </div>
-        </div>
+        )}
       </Card>
 
       {selected && (
@@ -1332,8 +1383,12 @@ export function InteractiveMrtMap({
                   {selected.code}
                 </p>
               </div>
-              <p className="truncate text-lg font-bold">{isEn ? selected.nameEn : selected.nameTh}</p>
-              <p className="truncate text-xs text-muted-foreground">{isEn ? selected.nameTh : selected.nameEn}</p>
+              <p className="truncate text-lg font-bold">
+                {isEn ? selected.nameEn : selected.nameTh}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                {isEn ? selected.nameTh : selected.nameEn}
+              </p>
               {selected.isInterchange && (
                 <p className="mt-1 text-xs font-medium text-primary">
                   สถานีเชื่อมต่อ / Interchange
