@@ -6,7 +6,7 @@ export interface QrPayload {
   nonce: string;
 }
 
-export const QR_ROTATE_MS = 20_000;
+export const QR_ROTATE_MS = 10_000;
 
 function randomNonce() {
   const arr = new Uint8Array(9);

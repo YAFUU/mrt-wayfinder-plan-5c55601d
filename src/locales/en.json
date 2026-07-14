@@ -5,7 +5,7 @@
   },
   "demo": {
     "banner": "Demo Mode — data is stored on this device only",
-    "qrTicket": "Demo QR Ticket: cannot be used at real MRT gates until connected to authorized systems.",
+    "qrTicket": "This QR Ticket is for demonstration only and cannot be used at real MRT gates.",
     "payment": "Demo Mode: no real charge.",
     "queue": "Queue data is simulated for the prototype",
     "fareEstimate": "Estimated fare",
@@ -125,8 +125,8 @@
         "description": "See your nearest station and live prototype crowd information."
       },
       {
-        "title": "Enter with RFID",
-        "description": "Choose your origin and destination, pay first, then use the demo RFID flow at the selected stations."
+        "title": "Use a QR demo ticket",
+        "description": "Choose your origin and destination, pay first, then use a separate rotating QR demo ticket for each passenger."
       }
     ]
   },
@@ -225,38 +225,32 @@
     "passengerFallback": "Passenger"
   },
   "ticket": {
-    "readyToEnter": "Ready to enter",
+    "readyToEnter": "Ready to use",
     "inJourney": "In journey",
     "completed": "Completed",
     "expired": "Expired",
     "cancelled": "Cancelled",
     "paymentPending": "Payment pending",
     "ticketId": "Ticket ID",
-    "scanIn": "Simulate Scan In",
-    "scanOut": "Simulate Scan Out",
+    "scanIn": "Scan in",
+    "scanOut": "Scan out",
     "receipt": "View receipt",
     "brightness": "Boost brightness",
     "howTo": "How to use",
     "help": "Get help",
-    "tokenRotate": "Code rotates in",
+    "tokenRotate": "Code refreshes in {{seconds}}s",
     "myTickets": "My tickets",
     "emptyTitle": "No tickets yet",
     "emptyDesc": "Plan a trip and create your Demo QR Ticket here.",
     "filterAll": "All",
     "notFound": "Ticket not found",
-    "rfidTitle": "RFID ticket · valid only at the selected stations",
-    "rfidOriginOnly": "This RFID ticket can only be used at {{station}} station.",
-    "rfidEntered": "RFID entry at {{station}} completed (Demo).",
-    "rfidDestinationOnly": "You can only exit at the destination station, {{station}}.",
-    "rfidExited": "RFID exit at {{station}} completed (Demo).",
-    "readyToTapIn": "Ready to tap in at {{station}}",
-    "walkToOrigin": "Walk to {{station}} to enter ({{distance}} m away)",
-    "readyToTapOut": "Ready to tap out at {{station}}",
-    "walkToDestination": "Exit only at {{station}} ({{distance}} m away)",
-    "enableLocationHint": "Enable location so the app can confirm you are at the correct station.",
-    "enableGps": "Enable GPS",
-    "tapInRfid": "Tap in (RFID)",
-    "tapOutRfid": "Tap out (RFID)",
+    "qrTicket": "QR Ticket",
+    "scanInSuccess": "Scan in at {{station}} completed (Demo).",
+    "scanOutSuccess": "Scan out at {{station}} completed (Demo).",
+    "demoScanTitle": "QR Ticket demo scan",
+    "demoScanHint": "Use Scan in and Scan out to demonstrate the journey status flow. Location is not required.",
+    "groupTickets": "Passenger QR Tickets",
+    "passengerNumber": "Passenger {{number}}",
     "fullscreenEnabled": "Fullscreen mode enabled"
   },
   "queue": {
@@ -473,12 +467,12 @@
         "description": "Choose e-Wallet at checkout to deduct the fare from your demo balance."
       },
       "7": {
-        "title": "7. Receive an RFID demo ticket",
-        "description": "After payment, the app issues an RFID demo ticket shown as a QR code and reference number."
+        "title": "7. Receive a QR demo ticket",
+        "description": "After payment, each passenger receives a separate rotating QR demo ticket and ticket reference."
       },
       "8": {
-        "title": "8. Enter and exit at selected stations",
-        "description": "The demo ticket is valid only for the selected origin and destination."
+        "title": "8. Demonstrate Scan in and Scan out",
+        "description": "Use the demo buttons to move the ticket from Ready to use, to In journey, and then Completed."
       }
     }
   },

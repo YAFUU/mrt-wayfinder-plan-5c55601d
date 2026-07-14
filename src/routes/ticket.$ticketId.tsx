@@ -6,8 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PageHeader, DemoDisclaimer, EmptyState } from "@/components/common";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sun, Share2, LogIn, LogOut, HelpCircle, Receipt, Sparkles, Radio } from "lucide-react";
-import { useSharedLiveLocation } from "@/components/LocationProvider";
+import { Sun, Share2, LogIn, LogOut, HelpCircle, Receipt, Sparkles, QrCode } from "lucide-react";
 import { getStation } from "@/services/routeService";
 import { generateQrToken, QR_ROTATE_MS } from "@/lib/qr";
 import { storage } from "@/services/storageService";
@@ -36,25 +35,30 @@ function TicketPage() {
   const ticket = tickets.find((t) => t.id === ticketId) ?? storage.getTicket(ticketId);
   const [now, setNow] = useState(Date.now());
   const [token, setToken] = useState(() => (ticket ? ticket.qrToken : ""));
+  const [nextRotationAt, setNextRotationAt] = useState(Date.now() + QR_ROTATE_MS);
   const profile = useProfile();
   const nav = useNavigate();
-  const live = useSharedLiveLocation();
+  const activeTicketId = ticket?.id;
+  const activeTicketStatus = ticket?.status;
 
-  // Rotate QR token every 20s
+  // Keep the ticket reference stable while rotating the short-lived demo QR payload.
   useEffect(() => {
-    if (!ticket) return;
-    if (ticket.status !== "ready_to_enter" && ticket.status !== "in_journey") return;
+    if (!activeTicketId) return;
+    if (activeTicketStatus !== "ready_to_enter" && activeTicketStatus !== "in_journey") return;
     const t0 = Date.now();
-    setToken(generateQrToken(ticket.id, t0));
-    storage.updateTicket(ticket.id, { qrToken: generateQrToken(ticket.id, t0) });
+    const initialToken = generateQrToken(activeTicketId, t0);
+    setToken(initialToken);
+    setNextRotationAt(t0 + QR_ROTATE_MS);
+    storage.updateTicket(activeTicketId, { qrToken: initialToken });
     const iv = setInterval(() => {
       const t1 = Date.now();
-      const fresh = generateQrToken(ticket.id, t1);
+      const fresh = generateQrToken(activeTicketId, t1);
       setToken(fresh);
-      storage.updateTicket(ticket.id, { qrToken: fresh });
+      setNextRotationAt(t1 + QR_ROTATE_MS);
+      storage.updateTicket(activeTicketId, { qrToken: fresh });
     }, QR_ROTATE_MS);
     return () => clearInterval(iv);
-  }, [ticket?.id, ticket?.status]);
+  }, [activeTicketId, activeTicketStatus]);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -71,9 +75,8 @@ function TicketPage() {
 
   const countdown = useMemo(() => {
     if (!ticket || !token) return 0;
-    // rough: rotate every 20s from a Date.now() base
-    return Math.max(0, QR_ROTATE_MS - (now % QR_ROTATE_MS)) / 1000;
-  }, [now, token, ticket]);
+    return Math.max(0, Math.ceil((nextRotationAt - now) / 1000));
+  }, [nextRotationAt, now, token, ticket]);
 
   if (!ticket) {
     return (
@@ -97,41 +100,35 @@ function TicketPage() {
   const isActive = ticket.status === "ready_to_enter" || ticket.status === "in_journey";
   const originName = getLocalizedName(origin, i18n.resolvedLanguage);
   const destinationName = getLocalizedName(destination, i18n.resolvedLanguage);
-
-  const distTo = (s: { lat: number; lng: number }) => {
-    if (!live.coords) return null;
-    const R = 6371000,
-      rad = (d: number) => (d * Math.PI) / 180;
-    const dLat = rad(s.lat - live.coords.lat),
-      dLng = rad(s.lng - live.coords.lng);
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(rad(live.coords.lat)) * Math.cos(rad(s.lat)) * Math.sin(dLng / 2) ** 2;
-    return 2 * R * Math.asin(Math.sqrt(a));
+  const groupTickets = ticket.groupId
+    ? tickets
+        .filter((candidate) => candidate.groupId === ticket.groupId)
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    : [];
+  const passengerLabel = (candidate: Ticket, index: number) => {
+    const name = candidate.passengerName?.trim();
+    if (name === "ผู้ใช้หลัก" || name === "Primary passenger") {
+      return t("checkout.primaryPassenger");
+    }
+    if (name && /^(ผู้โดยสาร|Passenger)\s+\d+$/.test(name)) {
+      return t("ticket.passengerNumber", { number: index + 1 });
+    }
+    return name || t("ticket.passengerNumber", { number: index + 1 });
   };
-  const GATE_RADIUS = 250;
-  const dOrigin = distTo(origin);
-  const dDest = distTo(destination);
-  const atOrigin = dOrigin != null && dOrigin <= GATE_RADIUS;
-  const atDestination = dDest != null && dDest <= GATE_RADIUS;
+  const currentPassengerIndex = Math.max(
+    0,
+    groupTickets.findIndex((candidate) => candidate.id === ticket.id),
+  );
 
   const scanIn = () => {
     if (ticket.status !== "ready_to_enter") return;
-    if (live.status === "watching" && !atOrigin) {
-      toast.error(t("ticket.rfidOriginOnly", { station: originName }));
-      return;
-    }
     storage.setTicketStatus(ticket.id, "in_journey");
-    toast.success(t("ticket.rfidEntered", { station: originName }));
+    toast.success(t("ticket.scanInSuccess", { station: originName }));
   };
   const scanOut = () => {
     if (ticket.status !== "in_journey") return;
-    if (live.status === "watching" && !atDestination) {
-      toast.error(t("ticket.rfidDestinationOnly", { station: destinationName }));
-      return;
-    }
     storage.setTicketStatus(ticket.id, "completed");
-    toast.success(t("ticket.rfidExited", { station: destinationName }));
+    toast.success(t("ticket.scanOutSuccess", { station: destinationName }));
   };
   const boost = async () => {
     try {
@@ -159,6 +156,29 @@ function TicketPage() {
 
   return (
     <div className="p-4 lg:p-8 max-w-md mx-auto">
+      {groupTickets.length > 1 && (
+        <Card className="mb-4 p-3">
+          <p className="mb-2 text-xs font-medium text-muted-foreground">
+            {t("ticket.groupTickets")}
+          </p>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {groupTickets.map((groupTicket, index) => (
+              <Button
+                key={groupTicket.id}
+                asChild
+                size="sm"
+                variant={groupTicket.id === ticket.id ? "default" : "outline"}
+                className="shrink-0"
+              >
+                <Link to="/ticket/$ticketId" params={{ ticketId: groupTicket.id }}>
+                  {passengerLabel(groupTicket, index)}
+                </Link>
+              </Button>
+            ))}
+          </div>
+        </Card>
+      )}
+
       <Card
         className={cn(
           "overflow-hidden shadow-xl border-0",
@@ -167,16 +187,22 @@ function TicketPage() {
       >
         <div className="p-5">
           <div className="flex items-center justify-between">
-            <span
-              className={cn(
-                "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-                STATUS_COLOR[ticket.status],
-                isActive && "bg-white/20 text-white",
-              )}
-            >
-              ● {t(`ticket.${camelize(ticket.status)}`)}
-            </span>
-            <span className="text-xs opacity-80">{ticket.id}</span>
+            <div>
+              <p className="text-xs font-semibold">{t("ticket.qrTicket")}</p>
+              <span
+                className={cn(
+                  "mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                  STATUS_COLOR[ticket.status],
+                  isActive && "bg-white/20 text-white",
+                )}
+              >
+                {t(`ticket.${camelize(ticket.status)}`)}
+              </span>
+            </div>
+            <div className="text-right text-xs opacity-80">
+              <p>{t("ticket.ticketId")}</p>
+              <p className="font-medium">{ticket.id}</p>
+            </div>
           </div>
 
           <div className="mt-4 flex items-center gap-3">
@@ -213,7 +239,7 @@ function TicketPage() {
           </AnimatePresence>
           {isActive && (
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Sparkles className="size-3" /> {t("ticket.tokenRotate")} {Math.ceil(countdown)}s
+              <Sparkles className="size-3" /> {t("ticket.tokenRotate", { seconds: countdown })}
             </p>
           )}
         </div>
@@ -233,7 +259,7 @@ function TicketPage() {
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t("checkout.passengers")}</span>
             <span>
-              {ticket.passengerCount} · {ticket.passengerName ?? "-"}
+              {ticket.passengerCount} · {passengerLabel(ticket, currentPassengerIndex)}
             </span>
           </div>
           <div className="flex justify-between">
@@ -246,50 +272,21 @@ function TicketPage() {
       {isActive && (
         <Card className="mt-4 p-4 flex items-center gap-3">
           <div className="size-10 rounded-full bg-primary/10 grid place-items-center">
-            <Radio
-              className={`size-5 text-primary ${live.status === "watching" ? "animate-pulse" : ""}`}
-            />
+            <QrCode className="size-5 text-primary" />
           </div>
-          <div className="flex-1 min-w-0 text-xs">
-            <p className="font-semibold text-sm">{t("ticket.rfidTitle")}</p>
-            {live.status === "watching" ? (
-              ticket.status === "ready_to_enter" ? (
-                <p className="text-muted-foreground">
-                  {atOrigin
-                    ? t("ticket.readyToTapIn", { station: originName })
-                    : t("ticket.walkToOrigin", {
-                        station: originName,
-                        distance: Math.round(dOrigin ?? 0),
-                      })}
-                </p>
-              ) : (
-                <p className="text-muted-foreground">
-                  {atDestination
-                    ? t("ticket.readyToTapOut", { station: destinationName })
-                    : t("ticket.walkToDestination", {
-                        station: destinationName,
-                        distance: Math.round(dDest ?? 0),
-                      })}
-                </p>
-              )
-            ) : (
-              <p className="text-muted-foreground">{t("ticket.enableLocationHint")}</p>
-            )}
+          <div className="min-w-0 text-xs">
+            <p className="font-semibold text-sm">{t("ticket.demoScanTitle")}</p>
+            <p className="text-muted-foreground">{t("ticket.demoScanHint")}</p>
           </div>
-          {live.status !== "watching" && (
-            <Button size="sm" variant="outline" onClick={live.start}>
-              {t("ticket.enableGps")}
-            </Button>
-          )}
         </Card>
       )}
 
       <div className="mt-4 grid grid-cols-2 gap-2">
         <Button onClick={scanIn} disabled={ticket.status !== "ready_to_enter"}>
-          <LogIn className="size-4 mr-1" /> {t("ticket.tapInRfid")}
+          <LogIn className="size-4 mr-1" /> {t("ticket.scanIn")}
         </Button>
         <Button onClick={scanOut} disabled={ticket.status !== "in_journey"} variant="secondary">
-          <LogOut className="size-4 mr-1" /> {t("ticket.tapOutRfid")}
+          <LogOut className="size-4 mr-1" /> {t("ticket.scanOut")}
         </Button>
         <Button variant="outline" onClick={boost}>
           <Sun className="size-4 mr-1" /> {t("ticket.brightness")}
